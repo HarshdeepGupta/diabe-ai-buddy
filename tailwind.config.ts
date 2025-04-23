@@ -19,6 +19,10 @@ export default {
       }
     },
     extend: {
+      fontFamily: {
+        heading: ['Playfair Display', 'serif'],
+        body: ['Poppins', 'sans-serif']
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -63,32 +67,30 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))"
         },
-        diabetes: {
-          50: '#F2FCE2',  // Softest green
-          100: '#E5F4C3', // Very soft green
-          200: '#D3E4FD', // Soft blue
-          300: '#FEF7CD', // Soft yellow
-          400: '#FEC6A1', // Soft peach
-          500: '#86EFAC', // Light green
-          600: '#4ADE80', // Medium green
-          700: '#22C55E', // Standard green
-          800: '#16A34A', // Deep green
-          900: '#15803D', // Darker green
-          950: '#14532D', // Darkest green
+        earthy: {
+          50: '#F9F5F1',  // Lightest beige
+          100: '#F2EAD3', // Light cream
+          200: '#F0DBBC', // Soft sand
+          300: '#E6C9A8', // Warm beige
+          400: '#DBA878', // Light peach
+          500: '#C58C57', // Medium peach
+          600: '#A36D48', // Soft terracotta
+          700: '#7D513A', // Medium brown
+          800: '#5C3C2E', // Deep brown
+          900: '#422B20', // Dark brown
         },
-        health: {
-          50: '#F2FCE2',  // Softest green
-          100: '#E5F4C3', // Very soft green 
-          200: '#BBF7D0', // Light green
-          300: '#86EFAC', // Medium-light green
-          400: '#4ADE80', // Medium green
-          500: '#22C55E', // Standard green
-          600: '#16A34A', // Deep green
-          700: '#15803D', // Darker green
-          800: '#166534', // Very dark green
-          900: '#14532D', // Extremely dark green
-          950: '#052E16', // Almost black green
-        },
+        pastel: {
+          50: '#FCF9F0',  // Cream
+          100: '#FADEC9', // Peach
+          200: '#F9CFAD', // Light peach
+          300: '#E9D8B4', // Soft yellow
+          400: '#C3E8BD', // Light mint
+          500: '#A6DCEF', // Soft blue
+          600: '#E6BBD6', // Light pink
+          700: '#C2B0DF', // Soft purple
+          800: '#B5A897', // Soft taupe
+          900: '#8E7F70', // Medium taupe
+        }
       },
       borderRadius: {
         lg: 'var(--radius)',

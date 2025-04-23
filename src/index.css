@@ -1,91 +1,93 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* Soft pastel theme for light mode */
-    --background: 90 47% 96%;
-    --foreground: 222 47% 11%;
+    /* Earthy Pastels Theme for Light Mode */
+    --background: 40 30% 95%;
+    --foreground: 30 25% 25%;
     
-    --card: 54 100% 97%;
-    --card-foreground: 222 47% 11%;
+    --card: 38 30% 97%;
+    --card-foreground: 30 25% 25%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 30 25% 25%;
     
-    --primary: 214 100% 97%;
-    --primary-foreground: 214 100% 30%;
+    --primary: 11 65% 80%;
+    --primary-foreground: 11 65% 25%;
     
-    --secondary: 54 100% 97%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 146 30% 85%;
+    --secondary-foreground: 146 30% 25%;
     
-    --muted: 240 5% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 30 15% 92%;
+    --muted-foreground: 30 10% 40%;
     
-    --accent: 243 100% 97%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 199 35% 85%;
+    --accent-foreground: 199 35% 25%;
     
-    --destructive: 0 85% 97%;
-    --destructive-foreground: 0 85% 40%;
+    --destructive: 0 65% 85%;
+    --destructive-foreground: 0 65% 30%;
     
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 214 91% 60%;
+    --border: 30 15% 85%;
+    --input: 30 15% 85%;
+    --ring: 11 65% 70%;
     
-    --radius: 0.5rem;
+    --radius: 0.75rem;
     
     /* Sidebar colors */
-    --sidebar-background: 240 5% 96%;
-    --sidebar-foreground: 240 6% 10%;
-    --sidebar-primary: 214 100% 97%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 243 100% 97%;
-    --sidebar-accent-foreground: 240 6% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-background: 30 15% 94%;
+    --sidebar-foreground: 30 25% 25%;
+    --sidebar-primary: 11 65% 80%;
+    --sidebar-primary-foreground: 11 65% 25%;
+    --sidebar-accent: 146 30% 85%;
+    --sidebar-accent-foreground: 146 30% 25%;
+    --sidebar-border: 30 15% 85%;
+    --sidebar-ring: 11 65% 70%;
   }
 
   .dark {
-    /* Darker theme that complements the pastel light theme */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    /* Darker Earthy Theme */
+    --background: 30 15% 15%;
+    --foreground: 30 10% 90%;
     
-    --card: 222 47% 15%;
-    --card-foreground: 210 40% 98%;
+    --card: 30 15% 18%;
+    --card-foreground: 30 10% 90%;
     
-    --popover: 222 47% 15%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 30 15% 18%;
+    --popover-foreground: 30 10% 90%;
     
-    --primary: 214 84% 45%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 11 45% 45%;
+    --primary-foreground: 11 20% 95%;
     
-    --secondary: 54 39% 25%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 146 20% 35%;
+    --secondary-foreground: 30 10% 90%;
     
-    --muted: 217 33% 18%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 30 15% 25%;
+    --muted-foreground: 30 10% 70%;
     
-    --accent: 243 39% 25%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 199 20% 35%;
+    --accent-foreground: 30 10% 90%;
     
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 60% 40%;
+    --destructive-foreground: 30 10% 90%;
     
-    --border: 217 33% 18%;
-    --input: 217 33% 18%;
-    --ring: 213 27% 84%;
+    --border: 30 15% 25%;
+    --input: 30 15% 25%;
+    --ring: 11 45% 55%;
     
     /* Dark mode sidebar */
-    --sidebar-background: 240 6% 10%;
-    --sidebar-foreground: 240 5% 96%;
-    --sidebar-primary: 214 76% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 4% 16%;
-    --sidebar-accent-foreground: 240 5% 96%;
-    --sidebar-border: 240 4% 16%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-background: 30 15% 12%;
+    --sidebar-foreground: 30 10% 85%;
+    --sidebar-primary: 11 45% 45%;
+    --sidebar-primary-foreground: 30 10% 95%;
+    --sidebar-accent: 146 20% 30%;
+    --sidebar-accent-foreground: 30 10% 85%;
+    --sidebar-border: 30 15% 20%;
+    --sidebar-ring: 11 45% 55%;
   }
 }
 
@@ -95,7 +97,52 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-body text-base;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl mb-6;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl mb-4;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl mb-3;
+  }
+  
+  h4 {
+    @apply text-xl md:text-2xl mb-2;
+  }
+  
+  p {
+    @apply leading-relaxed mb-4 text-base md:text-lg;
+  }
+
+  /* Base font size increase */
+  html {
+    font-size: 16px;
+    @apply md:text-[17px] lg:text-[18px];
+  }
+}
+
+/* Utility classes for our earthy pastel theme */
+@layer components {
+  .card-pastel {
+    @apply bg-gradient-to-br from-card to-white/60 shadow-md border border-border rounded-xl p-5;
+  }
+  
+  .button-primary {
+    @apply bg-primary text-primary-foreground font-medium text-base md:text-lg py-3 px-5 rounded-lg hover:opacity-90 transition-all shadow-sm;
+  }
+  
+  .input-pastel {
+    @apply bg-background border-2 border-border rounded-lg px-4 py-3 text-base md:text-lg focus:border-primary focus:ring-1 focus:ring-primary transition-all;
   }
 }
