@@ -1,4 +1,3 @@
-
 /**
  * Environment Variables Manager
  * 
@@ -23,8 +22,8 @@ export function getEnvVar(key: string, defaultValue: string = ''): string {
  * These must be provided in the .env file
  */
 export const API_KEYS = {
-  // OpenAI API key for AI services
-  OPENAI_API_KEY: getEnvVar('VITE_OPENAI_API_KEY'),
+  // Gemini API key for AI services
+  GEMINI_API_KEY: getEnvVar('VITE_GEMINI_API_KEY'),
   
   // Optional: Google Calendar integration
   GOOGLE_API_KEY: getEnvVar('VITE_GOOGLE_API_KEY'),
@@ -37,7 +36,7 @@ export const API_KEYS = {
  * @returns Array of missing required environment variables
  */
 export function checkRequiredEnvVars(): string[] {
-  const required = ['VITE_OPENAI_API_KEY'];
+  const required = ['VITE_GEMINI_API_KEY'];
   return required.filter(key => !import.meta.env[key]);
 }
 
