@@ -67,7 +67,21 @@
     "vite-plugin-pwa": "^1.0.0",
     "workbox-window": "^7.3.0",
     "zod": "^3.24.3",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.3",
+    "autoprefixer": "^10.4.20",
+    "jiti": "latest",
+    "less": "latest",
+    "lightningcss": "latest",
+    "sass": "latest",
+    "sass-embedded": "latest",
+    "stylus": "latest",
+    "sugarss": "latest",
+    "terser": "latest",
+    "tsx": "latest",
+    "yaml": "latest",
+    "vite": "latest",
+    "@vitejs/plugin-react": "latest",
+    "path": "latest"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
