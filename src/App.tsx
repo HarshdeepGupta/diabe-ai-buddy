@@ -16,7 +16,6 @@ import CaregiverPage from "./pages/Caregiver";
 import VoiceChatPage from "./pages/VoiceChat";
 import './globals.css'
 import './pages/globals.css'
-import { ragService } from "./services/ragService";
 import { useEffect } from "react";
 
 import NotFound from "./pages/NotFound";
@@ -25,14 +24,6 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function App() {
-  // Initialize the RAG service when the app loads
-  useEffect(() => {
-    // Initialize the RAG service on app startup
-    ragService.initialize().catch(error => {
-      console.error("Failed to initialize RAG service:", error);
-    });
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
