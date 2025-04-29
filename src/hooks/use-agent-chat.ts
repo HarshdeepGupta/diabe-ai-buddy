@@ -217,7 +217,8 @@ export function useAgentChat({
     // Determine mood based on confidence level or specified value
     if (response.metadata?.mood) {
       // Use the mood directly if it matches allowed values
-      if (["neutral", "concerned", "encouraging", "urgent", "supportive", "coaching"].includes(response.metadata.mood)) {
+      const validMoods = ["neutral", "concerned", "encouraging", "urgent", "supportive", "coaching"];
+      if (validMoods.includes(response.metadata.mood)) {
         mood = response.metadata.mood as MessageWithExtras["context"]["mood"];
       } else {
         // Default to neutral if not a valid mood
@@ -244,7 +245,7 @@ export function useAgentChat({
       const responseOptions = [
         {
           content: "I see you're asking about your blood glucose. Your last reading was 120 mg/dL, which is within your target range. Would you like to log a new reading?",
-          type: "text",
+          type: "text" as const,
           context: {
             category: "glucose" as const,
             actionable: true,

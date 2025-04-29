@@ -24,6 +24,7 @@ export type ChatResponse = {
     category?: string;
     confidence?: number;
     sources?: string[];
+    mood?: string; // Added mood property to the metadata type
   };
 };
 
