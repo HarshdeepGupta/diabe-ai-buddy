@@ -8,6 +8,7 @@ import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { formatDocumentsAsString } from "langchain/util/document";
 import { getApiKey } from "./utils/env";
 import logger from "./utils/logger";
+import { Document } from "langchain/document";
 
 // Define our state interface for the agent
 export interface DiabetesQnAState {
@@ -65,7 +66,7 @@ export class DiabetesRagAgent {
 
     this.model = new ChatGoogleGenerativeAI({
       apiKey: API_KEY,
-      model: "gemini-pro",
+      model: "gemini-2.0-flash",
       maxOutputTokens: 2048,
     });
 
@@ -115,7 +116,7 @@ export class DiabetesRagAgent {
             })
         );
 
-        const docs = [];
+        const docs: Document[] = [];
         for (const loader of webLoaders) {
           try {
             const loadedDocs = await loader.load();
@@ -272,16 +273,16 @@ export class DiabetesRagAgent {
     });
     
     // Connect the nodes in the graph
-    this.graph.addEdge(START, "categorize_question");
-    this.graph.addEdge("categorize_question", "retrieve_documents");
-    this.graph.addEdge("retrieve_documents", "check_info_sufficiency");
+    this.graph.addEdge(START, "categorize_question" as any);
+    this.graph.addEdge("categorize_question" as any, "retrieve_documents" as any);
+    this.graph.addEdge("retrieve_documents" as any, "check_info_sufficiency" as any);
     this.graph.addConditionalEdges(
-      "check_info_sufficiency",
+      "check_info_sufficiency" as any,
       (state) => (state.needsMoreInfo ? "request_more_info" : "generate_answer")
     );
-    this.graph.addEdge("generate_answer", "generate_followups");
-    this.graph.addEdge("generate_followups", END);
-    this.graph.addEdge("request_more_info", END);
+    this.graph.addEdge("generate_answer" as any, "generate_followups" as any);
+    this.graph.addEdge("generate_followups" as any, END);
+    this.graph.addEdge("request_more_info" as any, END);
   }
 
   public async answerQuestion(
