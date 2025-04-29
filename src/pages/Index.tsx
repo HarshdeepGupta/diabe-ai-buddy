@@ -2,7 +2,6 @@
 import { ProfileProvider } from "@/context/ProfileContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import DiabetesScheduler from "@/components/DiabetesScheduler";
 import { useEffect } from "react";
 import { registerServiceWorker, setupInstallPrompt } from "@/utils/pwa";
 import { Card, CardContent } from "@/components/ui/card";
@@ -169,9 +168,6 @@ const Index = () => {
                 <div className="w-80 h-80 bg-pastel-400 rounded-full opacity-50 blur-3xl"></div>
               </div>
               
-              <ProfileProvider>
-                <DiabetesScheduler />
-              </ProfileProvider>
             </div>
           </div>
         </section>
