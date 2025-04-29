@@ -49,7 +49,7 @@ export function getApiKey(key: keyof typeof API_KEYS): string {
   const value = API_KEYS[key];
   if (!value) {
     console.error(`Missing required API key: ${key}. Please add it to your .env file.`);
-    throw new Error(`Missing required API key: ${key}`);
+    // throw new Error(`Missing required API key: ${key}`);
   }
   return value;
 }
