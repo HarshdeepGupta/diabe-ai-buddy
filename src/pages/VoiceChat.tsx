@@ -1,5 +1,3 @@
-
-
 import React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Link,useSearchParams } from 'react-router-dom';
@@ -43,7 +41,7 @@ type Message = {
     category?: "medication" | "glucose" | "meal" | "activity" | "mood" | "emergency"
     actionable?: boolean
     options?: string[]
-    mood?: "neutral" | "concerned" | "encouraging" | "urgent"
+    mood?: "neutral" | "concerned" | "encouraging" | "urgent" | "supportive" | "coaching"
     relatedData?: any
   }
 }
@@ -269,7 +267,7 @@ export default function VoiceChatPage() {
           category: "meal",
           actionable: true,
           options: ["Show me options", "Tell me more about glycemic index", "Not now"],
-          mood: "coaching",
+          mood: "encouraging", // Changed from "coaching" to "encouraging"
         }
       }
       // Check for mood/emotional queries
@@ -285,7 +283,7 @@ export default function VoiceChatPage() {
           category: "mood",
           actionable: true,
           options: ["Let's talk more", "Suggest relaxation techniques", "Contact my support person"],
-          mood: "supportive",
+          mood: "concerned", // Changed from "supportive" to "concerned"
         }
       }
       // Check for status/progress queries
@@ -302,7 +300,7 @@ export default function VoiceChatPage() {
           category: "glucose",
           actionable: true,
           options: ["Tell me more about evening readings", "What should I change?", "Show me my weekly report"],
-          mood: "coaching",
+          mood: "encouraging", // Changed from "coaching" to "encouraging"
         }
       }
       // Default response
@@ -311,7 +309,7 @@ export default function VoiceChatPage() {
           "Thank you for sharing that. Managing diabetes is a journey, and I'm here to support you every step of the way. Is there anything specific about your diabetes management you'd like to focus on today?"
         response.context = {
           options: ["Blood sugar", "Medications", "Meals", "How I'm feeling"],
-          mood: "supportive",
+          mood: "neutral", // Changed from "supportive" to "neutral"
         }
       }
 

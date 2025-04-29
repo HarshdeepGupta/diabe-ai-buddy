@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useLangGraphAgent, ChatMessage, ChatResponse } from "@/services/langGraphService";
 import { toast } from "@/components/ui/use-toast";
@@ -10,7 +9,7 @@ export type MessageWithExtras = ChatMessage & {
     category?: "medication" | "glucose" | "meal" | "activity" | "mood" | "emergency";
     actionable?: boolean;
     options?: string[];
-    mood?: "neutral" | "concerned" | "encouraging" | "urgent";
+    mood?: "neutral" | "concerned" | "encouraging" | "urgent" | "supportive" | "coaching";
     relatedData?: any;
   };
 };
@@ -207,19 +206,34 @@ export function useAgentChat({
     } else if (response.actions && response.actions.length > 0) {
       return "nudge";
     }
-    return "text";
+    return "text"; // Default to text type
   };
   
   // Helper function to extract context from response
   const extractContext = (response: ChatResponse): MessageWithExtras["context"] => {
     // Extract context information from metadata
+    let mood: MessageWithExtras["context"]["mood"] = undefined;
+    
+    // Determine mood based on confidence level or specified value
+    if (response.metadata?.mood) {
+      // Use the mood directly if it matches allowed values
+      if (["neutral", "concerned", "encouraging", "urgent", "supportive", "coaching"].includes(response.metadata.mood)) {
+        mood = response.metadata.mood as MessageWithExtras["context"]["mood"];
+      } else {
+        // Default to neutral if not a valid mood
+        mood = "neutral";
+      }
+    } else if (response.metadata?.confidence) {
+      // Determine mood based on confidence
+      mood = response.metadata.confidence > 0.8 ? "encouraging" : 
+             response.metadata.confidence < 0.4 ? "concerned" : "neutral";
+    }
+    
     return {
       category: response.metadata?.category as MessageWithExtras["context"]["category"],
       actionable: response.actions && response.actions.length > 0,
       options: response.actions?.map(action => action.payload.label || action.type),
-      mood: response.metadata?.confidence ? 
-        (response.metadata.confidence > 0.8 ? "encouraging" : 
-         response.metadata.confidence < 0.4 ? "concerned" : "neutral") as MessageWithExtras["context"]["mood"] : undefined,
+      mood,
       relatedData: response.metadata,
     };
   };
