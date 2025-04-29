@@ -254,7 +254,7 @@ export function useAgentChat({
         },
         {
           content: "It looks like you're due for your Metformin medication soon. Would you like me to remind you when it's time?",
-          type: "nudge",
+          type: "nudge" as const,
           context: {
             category: "medication" as const,
             actionable: true,
@@ -263,7 +263,7 @@ export function useAgentChat({
         },
         {
           content: "Based on your last few meals, I've noticed your blood sugar tends to spike after breakfast. Would you like some alternative breakfast ideas that might help?",
-          type: "text",
+          type: "text" as const,
           context: {
             category: "meal" as const,
             actionable: true,
@@ -272,7 +272,7 @@ export function useAgentChat({
         },
         {
           content: "I understand managing diabetes can be challenging. How are you feeling today about your health journey?",
-          type: "text",
+          type: "text" as const,
           context: {
             category: "mood" as const,
             actionable: false,
