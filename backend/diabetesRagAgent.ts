@@ -6,6 +6,7 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { formatDocumentsAsString } from "langchain/util/document";
+import { transcribeAudioInput, textToSpeech, recordVoice, playAudio } from './utils/audio';
 import { getApiKey } from "./utils/env";
 import logger from "./utils/logger";
 import { Document } from "langchain/document";
@@ -60,6 +61,7 @@ export class DiabetesRagAgent {
   private graph: StateGraph<DiabetesQnAState>;
   private executor: any;
   private isInitialized: boolean = false;
+  private audioController: AbortController | null = null;
 
   constructor() {
     const API_KEY = getApiKey("GEMINI_API_KEY");
@@ -307,6 +309,70 @@ export class DiabetesRagAgent {
       answer: finalState.answer || "I'm sorry, I couldn't generate an answer at this time.",
       followupQuestions: finalState.followupQuestions || [],
     };
+  }
+
+  public async handleVoiceInteraction(options: {
+    recordingTimeout?: number;
+    playbackVolume?: number;
+    maxRecordingDuration?: number;
+  } = {}): Promise<void> {
+    try {
+      // Create a new abort controller for this interaction
+      this.audioController = new AbortController();
+      const signal = this.audioController.signal;
+
+      // Record user's voice input with timeout and cancellation
+      const audioBuffer = await recordVoice(options.maxRecordingDuration ?? 5, {
+        timeout: options.recordingTimeout ?? 30,
+        cancelSignal: signal
+      });
+      
+      // Transcribe the audio to text with timeout and cancellation
+      const question = await transcribeAudioInput(audioBuffer, {
+        timeout: 30,
+        cancelSignal: signal
+      });
+      
+      // Get the answer from the agent
+      const { answer } = await this.answerQuestion(question);
+      
+      // Convert the answer to speech with timeout and cancellation
+      const answerAudio = await textToSpeech(answer, {
+        timeout: 60,
+        cancelSignal: signal
+      });
+      
+      // Play the answer with volume control and cancellation
+      await playAudio(answerAudio, {
+        volume: options.playbackVolume ?? 1.0,
+        cancelSignal: signal
+      });
+    } catch (error) {
+      if (error instanceof AudioError) {
+        switch (error.code) {
+          case 'CANCELLED':
+            logger.info('Voice interaction was cancelled');
+            break;
+          case 'TIMEOUT':
+            logger.warn('Voice interaction timed out');
+            break;
+          default:
+            logger.error('Error in voice interaction:', error);
+        }
+      } else {
+        logger.error('Unexpected error in voice interaction:', error);
+      }
+      throw error;
+    } finally {
+      this.audioController = null;
+    }
+  }
+
+  public cancelVoiceInteraction(): void {
+    if (this.audioController) {
+      this.audioController.abort();
+      this.audioController = null;
+    }
   }
 }
 
