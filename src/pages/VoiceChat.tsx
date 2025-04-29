@@ -1,8 +1,7 @@
-
-
+import { useRagChat } from "@/hooks/useRagChat";
 import React from "react"
 import { useState, useRef, useEffect } from "react"
-import { Link,useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowLeft,
@@ -33,30 +32,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 
-type Message = {
-  id: string
-  role: "user" | "assistant" | "system"
-  content: string
-  timestamp: Date
-  type: "text" | "voice" | "check-in" | "alert" | "nudge"
-  context?: {
-    category?: "medication" | "glucose" | "meal" | "activity" | "mood" | "emergency"
-    actionable?: boolean
-    options?: string[]
-    mood?: "neutral" | "concerned" | "encouraging" | "urgent"
-    relatedData?: any
-  }
-}
-
 type VoiceState = "idle" | "listening" | "processing" | "speaking"
 type AIPersonality = "supportive" | "coaching" | "clinical" | "friendly"
 
 export default function VoiceChatPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
+  const topic = searchParams.get("topic") as "glucose" | "medication" | "meal" | "wellness" | undefined;
+  
+  // Use the RAG chat hook
+  const {
+    messages,
+    isLoading,
+    followupQuestions,
+    sendMessage,
+    addSystemMessage
+  } = useRagChat({
+    topic,
+    initialMessages: []
+  });
 
-  const topic = searchParams.get("topic") || ""
-
-  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [voiceState, setVoiceState] = useState<VoiceState>("idle")
   const [isMuted, setIsMuted] = useState(false)
@@ -71,82 +65,49 @@ export default function VoiceChatPage() {
 
   // Initialize with welcome message based on topic
   useEffect(() => {
-    const initialMessage: Message = {
-      id: "welcome",
-      role: "assistant",
-      content: "Hello Martha! I'm your DiaVoice assistant. How can I help you today with your diabetes management?",
-      timestamp: new Date(),
-      type: "text",
-    }
-
+    let initialMessageContent = "Hello Martha! I'm your DiaVoice assistant. How can I help you today with your diabetes management?";
+    
     // Customize initial message based on topic
     if (topic === "glucose") {
-      initialMessage.content =
-        "Let's talk about your blood sugar. Would you like to log a new reading or review your recent trends?"
-      initialMessage.context = { category: "glucose", actionable: true }
-    } else if (topic === "medications") {
-      initialMessage.content =
-        "I see you have a medication due in 30 minutes. Would you like me to remind you about your medications today?"
-      initialMessage.context = { category: "medication", actionable: true }
-    } else if (topic === "meals") {
-      initialMessage.content =
-        "Let's discuss your meal options. I noticed that oatmeal with banana spiked your sugar last Tuesday. Would you like some alternative breakfast suggestions?"
-      initialMessage.context = { category: "meal", actionable: true }
+      initialMessageContent = "Let's talk about your blood sugar. Would you like to log a new reading or review your recent trends?";
+    } else if (topic === "medication") {
+      initialMessageContent = "I see you have a medication due in 30 minutes. Would you like me to remind you about your medications today?";
+    } else if (topic === "meal") {
+      initialMessageContent = "Let's discuss your meal options. I noticed that oatmeal with banana spiked your sugar last Tuesday. Would you like some alternative breakfast suggestions?";
     } else if (topic === "wellness") {
-      initialMessage.content = "How are you feeling today, Martha? I'm here to listen and support you."
-      initialMessage.context = { category: "mood", actionable: false }
+      initialMessageContent = "How are you feeling today, Martha? I'm here to listen and support you.";
     }
 
     // Add a morning check-in message if no specific topic
     if (!topic) {
-      const checkInMessage: Message = {
-        id: "check-in",
-        role: "system",
-        content:
-          "Good morning, Martha! It's time for your morning check-in. Would you like to log your blood sugar now?",
-        timestamp: new Date(),
-        type: "check-in",
-        context: {
-          category: "glucose",
-          actionable: true,
-          options: ["Yes, let's log it", "Remind me later", "I already checked it"],
-          mood: "encouraging",
-        },
-      }
-      setMessages([checkInMessage, initialMessage])
-    } else {
-      setMessages([initialMessage])
+      const checkInMessage = "Good morning, Martha! It's time for your morning check-in. Would you like to log your blood sugar now?";
+      addSystemMessage(checkInMessage, "check-in");
     }
-  }, [topic])
+    
+    // Send initial message
+    setTimeout(() => {
+      // Using addSystemMessage instead of sendMessage to avoid making an API call for the welcome message
+      addSystemMessage(initialMessageContent, topic ? "text" : "check-in");
+    }, 100);
+  }, [topic, addSystemMessage]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    scrollToBottom();
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
+  // Send message handler
   const handleSendMessage = () => {
-    if (input.trim() === "") return
-
-    // Add user message
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: input,
-      timestamp: new Date(),
-      type: "text",
-    }
-
-    setMessages((prev) => [...prev, userMessage])
-    setInput("")
-
-    // Simulate AI response
-    simulateResponse(input)
+    if (input.trim() === "") return;
+    sendMessage(input);
+    setInput("");
   }
 
+  // Voice button handler
   const handleVoiceButtonClick = () => {
     if (voiceState === "idle") {
       startListening()
@@ -163,23 +124,20 @@ export default function VoiceChatPage() {
     // Simulate voice recognition after 3 seconds
     setTimeout(() => {
       const recognizedText = getRandomUserQuery()
-
-      // Add user message
-      const userMessage: Message = {
-        id: Date.now().toString(),
-        role: "user",
-        content: recognizedText,
-        timestamp: new Date(),
-        type: "voice",
-      }
-
-      setMessages((prev) => [...prev, userMessage])
-      setVoiceState("processing")
-
-      // Simulate processing
+      
+      // Send the recognized text through RAG
+      sendMessage(recognizedText);
+      setVoiceState("processing");
+      
+      // After response is received (simulated)
       setTimeout(() => {
-        simulateResponse(recognizedText)
-      }, 1000)
+        setVoiceState("speaking");
+        
+        // Simulate speaking for 5 seconds
+        setTimeout(() => {
+          setVoiceState("idle");
+        }, 5000);
+      }, 2000);
     }, 3000)
   }
 
@@ -191,143 +149,23 @@ export default function VoiceChatPage() {
     setVoiceState("idle")
   }
 
-  const simulateResponse = (query: string) => {
-    setTimeout(() => {
-      const response: Message = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: "",
-        timestamp: new Date(),
-        type: "text",
-      }
-
-      // Check for emergency keywords
+  // Check for emergency keywords
+  useEffect(() => {
+    // Look at the last user message
+    const lastUserMessage = [...messages].reverse().find(m => m.role === "user");
+    
+    if (lastUserMessage) {
+      const content = lastUserMessage.content.toLowerCase();
       if (
-        query.toLowerCase().includes("emergency") ||
-        query.toLowerCase().includes("help") ||
-        query.toLowerCase().includes("pain") ||
-        query.toLowerCase().includes("dizzy")
+        content.includes("emergency") ||
+        content.includes("help") ||
+        content.includes("pain") ||
+        content.includes("dizzy")
       ) {
-        response.content = "I notice you may be experiencing an urgent situation. Are you having a medical emergency?"
-        response.type = "alert"
-        response.context = {
-          category: "emergency",
-          actionable: true,
-          options: ["Yes, I need help", "No, I'm okay"],
-          mood: "urgent",
-        }
-
-        // Open emergency dialog
-        setIsEmergencyDialogOpen(true)
+        setIsEmergencyDialogOpen(true);
       }
-      // Check for glucose related queries
-      else if (
-        query.toLowerCase().includes("glucose") ||
-        query.toLowerCase().includes("sugar") ||
-        query.toLowerCase().includes("reading")
-      ) {
-        response.content =
-          "Your last blood glucose reading was 120 mg/dL at 7:30 AM, which is within your target range. Would you like to log a new reading now?"
-        response.context = {
-          category: "glucose",
-          actionable: true,
-          options: ["Log new reading", "Show me my trends", "No thanks"],
-          mood: "encouraging",
-          relatedData: {
-            lastReading: 120,
-            lastReadingTime: "7:30 AM",
-            trend: "stable",
-          },
-        }
-      }
-      // Check for medication related queries
-      else if (
-        query.toLowerCase().includes("medicine") ||
-        query.toLowerCase().includes("medication") ||
-        query.toLowerCase().includes("pill")
-      ) {
-        response.content =
-          "You have Metformin 500mg due at 9:00 AM with breakfast. Would you like me to mark it as taken or remind you later?"
-        response.context = {
-          category: "medication",
-          actionable: true,
-          options: ["Mark as taken", "Remind me later", "Tell me more about this medication"],
-          mood: "neutral",
-        }
-      }
-      // Check for meal related queries
-      else if (
-        query.toLowerCase().includes("food") ||
-        query.toLowerCase().includes("eat") ||
-        query.toLowerCase().includes("diet") ||
-        query.toLowerCase().includes("meal")
-      ) {
-        response.content =
-          "Based on your glucose patterns, I've noticed that high-carb breakfasts tend to spike your sugar levels. Would you like some low-glycemic breakfast options that have worked well for you in the past?"
-        response.type = "nudge"
-        response.context = {
-          category: "meal",
-          actionable: true,
-          options: ["Show me options", "Tell me more about glycemic index", "Not now"],
-          mood: "coaching",
-        }
-      }
-      // Check for mood/emotional queries
-      else if (
-        query.toLowerCase().includes("tired") ||
-        query.toLowerCase().includes("frustrated") ||
-        query.toLowerCase().includes("sad") ||
-        query.toLowerCase().includes("feel")
-      ) {
-        response.content =
-          "I hear that you're feeling frustrated. Living with diabetes can be challenging sometimes. Would you like to talk more about what's bothering you, or would some relaxation techniques help?"
-        response.context = {
-          category: "mood",
-          actionable: true,
-          options: ["Let's talk more", "Suggest relaxation techniques", "Contact my support person"],
-          mood: "supportive",
-        }
-      }
-      // Check for status/progress queries
-      else if (
-        query.toLowerCase().includes("how am i") ||
-        query.toLowerCase().includes("my health") ||
-        query.toLowerCase().includes("doing") ||
-        query.toLowerCase().includes("progress")
-      ) {
-        response.content =
-          "You're doing well this week, Martha! Your glucose readings have been stable, and you've taken all your medications on time. You've also completed 80% of your activity goals. There's just one pattern I've noticed - your evening readings tend to be a bit higher. Would you like to discuss strategies for your evening routine?"
-        response.type = "nudge"
-        response.context = {
-          category: "glucose",
-          actionable: true,
-          options: ["Tell me more about evening readings", "What should I change?", "Show me my weekly report"],
-          mood: "coaching",
-        }
-      }
-      // Default response
-      else {
-        response.content =
-          "Thank you for sharing that. Managing diabetes is a journey, and I'm here to support you every step of the way. Is there anything specific about your diabetes management you'd like to focus on today?"
-        response.context = {
-          options: ["Blood sugar", "Medications", "Meals", "How I'm feeling"],
-          mood: "supportive",
-        }
-      }
-
-      setMessages((prev) => [...prev, response])
-
-      if (!isMuted) {
-        setVoiceState("speaking")
-
-        // Simulate speech duration based on response length
-        const speakingDuration = Math.min(response.content.length * 50, 5000)
-        setTimeout(() => {
-          setVoiceState("idle")
-        }, speakingDuration)
-      }
-    }, 1000)
-  }
+    }
+  }, [messages]);
 
   const getRandomUserQuery = () => {
     const queries = [
@@ -392,6 +230,18 @@ export default function VoiceChatPage() {
       alert("Notifying your emergency contact...")
     }
     setIsEmergencyDialogOpen(false)
+  }
+
+  const handleQuickCommand = (command: string) => {
+    const commandMap = {
+      "Medication": "Tell me about my medication schedule today",
+      "Health": "How are my health metrics looking this week?",
+      "Diet": "What should I eat for my next meal?",
+      "Help": "I need help managing my diabetes"
+    };
+    
+    const message = commandMap[command as keyof typeof commandMap] || command;
+    sendMessage(message);
   }
 
   const buttonAppearance = getVoiceButtonAppearance()
@@ -524,6 +374,7 @@ export default function VoiceChatPage() {
                               size="sm"
                               variant={message.type === "alert" ? "destructive" : "secondary"}
                               className="text-sm bg-white/20 hover:bg-white/30 text-white"
+                              onClick={() => sendMessage(option)}
                             >
                               {option}
                             </Button>
@@ -557,6 +408,25 @@ export default function VoiceChatPage() {
                   </div>
                 </div>
               ))}
+              
+              {/* Loading indicator */}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="flex gap-3 max-w-[85%]">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src="/placeholder.svg?height=40&width=40" alt="DiaVoice" />
+                      <AvatarFallback className="bg-sunshine text-white">DV</AvatarFallback>
+                    </Avatar>
+                    <div className="p-4 rounded-lg bg-gradient-to-r from-mint to-teal/80 text-white">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 animate-pulse" />
+                        <p className="text-lg">Thinking...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
@@ -571,10 +441,10 @@ export default function VoiceChatPage() {
 
           {/* Quick Commands */}
           <div className="mb-4 flex flex-wrap gap-2 justify-center">
-            <QuickCommandButton icon={<Pill />} label="Medication" />
-            <QuickCommandButton icon={<Heart />} label="Health" />
-            <QuickCommandButton icon={<Utensils />} label="Diet" />
-            <QuickCommandButton icon={<HelpCircle />} label="Help" />
+            <QuickCommandButton icon={<Pill />} label="Medication" onClick={() => handleQuickCommand("Medication")} />
+            <QuickCommandButton icon={<Heart />} label="Health" onClick={() => handleQuickCommand("Health")} />
+            <QuickCommandButton icon={<Utensils />} label="Diet" onClick={() => handleQuickCommand("Diet")} />
+            <QuickCommandButton icon={<HelpCircle />} label="Help" onClick={() => handleQuickCommand("Help")} />
           </div>
 
           <div className="flex gap-2 items-center">
@@ -587,8 +457,14 @@ export default function VoiceChatPage() {
               onKeyDown={handleKeyDown}
               placeholder="Type your message here..."
               className="text-lg p-6 bg-white/80"
+              disabled={isLoading}
             />
-            <Button onClick={handleSendMessage} size="icon" className="h-12 w-12 bg-sunshine hover:bg-sunshine/90">
+            <Button 
+              onClick={handleSendMessage} 
+              size="icon" 
+              className="h-12 w-12 bg-sunshine hover:bg-sunshine/90"
+              disabled={isLoading || !input.trim()}
+            >
               <Send className="h-6 w-6" />
             </Button>
           </div>
@@ -674,9 +550,19 @@ export default function VoiceChatPage() {
   )
 }
 
-function QuickCommandButton({ icon, label }: { icon: React.ReactNode; label: string }) {
+interface QuickCommandButtonProps {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}
+
+function QuickCommandButton({ icon, label, onClick }: QuickCommandButtonProps) {
   return (
-    <Button variant="outline" className="text-base border-primary/30 text-primary hover:bg-primary/10">
+    <Button 
+      variant="outline" 
+      className="text-base border-primary/30 text-primary hover:bg-primary/10"
+      onClick={onClick}
+    >
       {React.cloneElement(icon as React.ReactElement, { className: "h-4 w-4 mr-2" })}
       {label}
     </Button>

@@ -16,35 +16,47 @@ import CaregiverPage from "./pages/Caregiver";
 import VoiceChatPage from "./pages/VoiceChat";
 import './globals.css'
 import './pages/globals.css'
+import { ragService } from "./services/ragService";
+import { useEffect } from "react";
 
 import NotFound from "./pages/NotFound";
 // import "./App.css";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<IndexNew />} />
-          <Route path="/old" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-           <Route path="/profile" element={<ProfilePage />} />
-         <Route path="/appointments" element={<AppointmentsPage />} />
-        <Route path="/glucose" element={<GlucosePage />} />
-        <Route path="/medications" element={<MedicationsPage />} />
-        <Route path="/meals" element={<MealsPage />} />
-        <Route path="/caregiver" element={<CaregiverPage />} />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/voice-chat" element={<VoiceChatPage />} />  
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  // Initialize the RAG service when the app loads
+  useEffect(() => {
+    // Initialize the RAG service on app startup
+    ragService.initialize().catch(error => {
+      console.error("Failed to initialize RAG service:", error);
+    });
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<IndexNew />} />
+            <Route path="/old" element={<Index />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/appointments" element={<AppointmentsPage />} />
+            <Route path="/glucose" element={<GlucosePage />} />
+            <Route path="/medications" element={<MedicationsPage />} />
+            <Route path="/meals" element={<MealsPage />} />
+            <Route path="/caregiver" element={<CaregiverPage />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/voice-chat" element={<VoiceChatPage />} />  
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
