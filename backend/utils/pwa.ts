@@ -1,5 +1,5 @@
 
-import { registerSW } from "virtual:pwa-register";
+/*import { registerSW } from "virtual:pwa-register";
 
 // Simple function to check if the app is being used in standalone mode (PWA installed)
 export function isPWAInstalled(): boolean {
@@ -67,3 +67,4 @@ export function setupInstallPrompt() {
     }
   });
 }
+*/

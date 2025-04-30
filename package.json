@@ -51,6 +51,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
+    "d3-dsv": "^2.0.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
     "input-otp": "^1.2.4",
@@ -84,7 +85,6 @@
     "uuid": "^11.1.0",
     "vaul": "^0.9.3",
     "vite": "latest",
-    "vite-plugin-pwa": "^1.0.0",
     "workbox-window": "^7.3.0",
     "yaml": "latest",
     "zod": "^3.24.3",
@@ -107,6 +107,7 @@
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.1"
+    "vite": "^5.4.1",
+    "vite-plugin-pwa": "^1.0.0"
   }
 }

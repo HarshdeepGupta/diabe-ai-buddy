@@ -69,11 +69,11 @@ export default function VoiceChatPage() {
     
     // Customize initial message based on topic
     if (topic === "glucose") {
-      initialMessageContent = "Let's talk about your blood sugar. Would you like to log a new reading or review your recent trends?";
+      initialMessageContent = "Let's talk about blood sugar. What questions do you have?";
     } else if (topic === "medication") {
-      initialMessageContent = "I see you have a medication due in 30 minutes. Would you like me to remind you about your medications today?";
+      initialMessageContent = "I am your medicine expert, what do you want to know?";
     } else if (topic === "meal") {
-      initialMessageContent = "Let's discuss your meal options. I noticed that oatmeal with banana spiked your sugar last Tuesday. Would you like some alternative breakfast suggestions?";
+      initialMessageContent = "Let's discuss your meal options.";
     } else if (topic === "wellness") {
       initialMessageContent = "How are you feeling today, Martha? I'm here to listen and support you.";
     }

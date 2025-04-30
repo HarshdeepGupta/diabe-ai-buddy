@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 
 const express = require("express");
@@ -30,8 +29,17 @@ app.post("/api/answerQuestion", async (req, res) => {
   }
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Backend server is running on http://localhost:${PORT}`);
-  console.log("GEMINI_API_KEY:", process.env.GEMINI_API_KEY);
-});
+// Preload documents before starting the server
+(async () => {
+  try {
+    console.log("Preloading diabetes documents and vector stores...");
+    await diabetesRagAgent.preloadDocuments();
+    console.log("Documents loaded. Starting server...");
+    app.listen(PORT, () => {
+      console.log(`Backend server is running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error("Failed to preload documents:", err);
+    process.exit(1);
+  }
+})();
