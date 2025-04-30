@@ -26,6 +26,7 @@ With voice input and output capabilities, DiaVoice Buddy allows users to **talk 
 - **Ask questions aloud**
 - **Hear answers read back clearly**
 - **Have a multi-turn conversation** to dive deeper into topics (is this available) ??
+- **Suggestions** Suggest follow up questions to continue the conversation 
 
 The experience is designed to be hands-free, making it especially helpful for users with limited mobility, vision challenges, or those multitasking.
 
@@ -35,7 +36,7 @@ Unlike basic chatbots that rely only on pre-programmed scripts, Diabe-AI Buddy u
 - It **generates** coherent and customized answers, integrating retrieved facts into natural, human-like responses.
 - It **Suggests** addition questions that they user may be looking answers for as follow up questions
 
-This ensures that the chatbot is both **grounded in factual knowledge** and **adaptive to your unique questions**, even if they are highly specific.
+This ensures that DiaVoice is both **grounded in factual knowledge** and **adaptive to unique questions**, even if they are highly specific.
 
 ### 3. Trusted Medical Content
 The knowledge base used by Diabetes Buddy is curated from credible sources, including:
@@ -66,7 +67,7 @@ Here’s what happens behind the scenes:
 4. **Voice Output**: The answer is read back to you in a friendly, easy-to-understand tone.
 5. **Text Output** The answer is also show in the text. In addition to the response it suggests follow up questions which you would want to know based on your first question
 
-   < Add the screenshot Here>
+![image](https://github.com/user-attachments/assets/09a561e6-4ec8-4f9e-aea8-70f59174314a)
 
 > "What should I eat after a low blood sugar episode?"
 
@@ -75,6 +76,7 @@ Here’s what happens behind the scenes:
 2. **RAG Search**: The system searches its diabetes-focused database for the most relevant documents.
 3. **Answer Generation**: It combines retrieved facts to generate a natural language answer.
 4. **Voice Output**: The answer is read back to you in a friendly, easy-to-understand tone.
+5. **Text Output** The answer is also show in the text. In addition to the response it suggests follow up questions which you would want to know based on your first question
 
 This pipeline delivers **quick, accurate, and conversational** support — giving you more confidence in your daily diabetes management.
 
@@ -82,6 +84,7 @@ This pipeline delivers **quick, accurate, and conversational** support — givin
 ## Architecture 
 
 ## Data Sources Used:
+<links to be added>
 ## Technologies Used:
 <To be updated>
 Data Storage and Retrieval: Azure Blob Storage, Azure Cosmos DB (Gremlin API), Azure AI Search.
@@ -103,7 +106,7 @@ Front End: Next.js
 * Healthcare Payers & Insurers – Plans aiming to lower avoidable hospital visits and improve chronic care outcomes for older adults.
 * Public Health & Aging Advocacy Organizations – Groups promoting access to inclusive digital health tools for underserved senior populations.## Future Roadmap
 
-Diabe-AI Buddy is just getting started! Planned features include:
+DiaVoice is just getting started! Planned features include:
 - **Personalized tracking** (e.g., blood glucose logs, food diaries)
 - **Emergency support** (triage guidance for high-risk symptoms)
 - **Reminder and Alert** (reminder to take insulin injection or measure blood sugar level if forgotten)
@@ -116,7 +119,6 @@ Diabe-AI Buddy is just getting started! Planned features include:
 * Minha Hwang (minhahwang@microsoft.com) 
 * Pallavi Gupta (pallavigupta@microsoft.com)
 * Prachi Agrawal (Prachi.Agrawal@microsoft.com)
-## Technology & Languages
 
 ## Project Repository URL
 
