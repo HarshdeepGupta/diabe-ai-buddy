@@ -10,6 +10,7 @@ import { transcribeAudioInput, textToSpeech, recordVoice, playAudio } from './ut
 import { getApiKey } from "./utils/env";
 import logger from "./utils/logger";
 import { Document } from "langchain/document";
+import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
 
 // Define our state interface for the agent
 export interface DiabetesQnAState {
@@ -25,29 +26,27 @@ export interface DiabetesQnAState {
 // Document sources by category
 const DOCUMENT_SOURCES = {
   glucose: [
-    "https://www.cdc.gov/diabetes/managing/managing-blood-sugar.html",
     "https://www.diabetes.org/healthy-living/medication-treatments/blood-glucose-testing-and-control",
     "https://www.niddk.nih.gov/health-information/diabetes/overview/managing-diabetes/know-blood-sugar-numbers"
   ],
   medication: [
     "https://www.diabetes.org/healthy-living/medication-treatments",
-    "https://www.niddk.nih.gov/health-information/diabetes/overview/insulin-medicines-treatments",
-    "https://www.cdc.gov/diabetes/managing/medication.html"
+    "https://www.niddk.nih.gov/health-information/diabetes/overview/insulin-medicines-treatments"
   ],
   meal: [
-    "https://www.diabetes.org/healthy-living/recipes-nutrition",
-    "https://www.cdc.gov/diabetes/managing/eat-well.html",
-    "https://www.niddk.nih.gov/health-information/diabetes/overview/diet-eating-physical-activity"
+    "https://diabetesjournals.org/care/article/40/Supplement_1/S33/36913/4-Lifestyle-Management",
+    "https://www.niddk.nih.gov/health-information/diabetes/overview/diet-eating-physical-activity",
+    "./backend/data/nutritiondata.csv",
+    //"./backend/data/pre_food.csv"
   ],
   wellness: [
     "https://www.diabetes.org/healthy-living/mental-health",
-    "https://www.cdc.gov/diabetes/managing/mental-health.html",
     "https://www.niddk.nih.gov/health-information/diabetes/overview/preventing-problems"
   ],
   general: [
-    "https://www.diabetes.org/diabetes",
-    "https://www.cdc.gov/diabetes/basics/type2.html",
-    "https://www.niddk.nih.gov/health-information/diabetes/overview"
+    "https://www.cdc.gov/diabetes/about/about-type-2-diabetes.html?CDC_AAref_Val=https://www.cdc.gov/diabetes/basics/type2.html",
+    "https://www.niddk.nih.gov/health-information/diabetes/overview",
+    "./backend/data/medquad.csv",
   ]
 };
 
@@ -90,12 +89,23 @@ export class DiabetesRagAgent {
     });
   }
 
+  /**
+   * Preload and cache all vector stores (document embeddings) for each category.
+   * This should be called at server startup to ensure documents are loaded before agent use.
+   */
+  public async preloadDocuments(): Promise<void> {
+    await this.setupVectorStores();
+    this.setupGraph();
+    this.executor = this.graph.compile();
+    this.isInitialized = true;
+  }
+
   public async initialize(): Promise<void> {
     if (this.isInitialized) return;
-
     try {
       logger.info("Initializing Diabetes RAG Agent");
-      await this.setupVectorStores();
+      //await this.setupVectorStores();
+      // Only set up the graph and executor, assume vector stores are preloaded
       this.setupGraph();
       this.executor = this.graph.compile();
       this.isInitialized = true;
@@ -111,12 +121,13 @@ export class DiabetesRagAgent {
 
     for (const category of categories) {
       try {
-        const webLoaders = DOCUMENT_SOURCES[category].map(
-          (source) =>
-            new CheerioWebBaseLoader(source, {
-              selector: "main, article, .content, .article-content, #content, body",
-            })
-        );
+        const webLoaders = DOCUMENT_SOURCES[category].map((source) => {
+          if (source.endsWith(".csv")) {
+            return new CSVLoader(source);
+          }
+          // ...existing logic for web sources
+          return new CheerioWebBaseLoader(source, { selector: "main, article, .content, .article-content, #content, body" });
+        });
 
         const docs: Document[] = [];
         for (const loader of webLoaders) {
@@ -194,7 +205,7 @@ export class DiabetesRagAgent {
         };
       }
     });
-    
+    /*
     // Add check_info_sufficiency node
     this.graph.addNode("check_info_sufficiency", async (state: DiabetesQnAState): Promise<Partial<DiabetesQnAState>> => {
       const hasRelevantDocs = state.relevantDocs && state.relevantDocs.trim().length > 0;
@@ -217,20 +228,21 @@ export class DiabetesRagAgent {
         ]
       };
     });
-    
+    */
     // Add generate_answer node
     this.graph.addNode("generate_answer", async (state: DiabetesQnAState): Promise<Partial<DiabetesQnAState>> => {
       const response = await this.model.invoke([
         new SystemMessage(
           "You are a helpful and accurate medical AI assistant for diabetes patients. " +
-          "Use the provided context information to answer the question. " +
-          "If you don't know the answer, say so rather than making something up. " +
-          "Always mention that the patient should consult healthcare professionals for medical advice."
+          "Use the provided context information to answer the question if it is relevant. " +
+          "If the context does not contain the answer, use your own knowledge to provide the most accurate and helpful response. " +
+          "Do not say 'I am sorry, but this document does not contain information about ...' or similar phrases. " +
+          "Always provide a helpful, informative answer, and mention that the patient should consult healthcare professionals for medical advice."
         ),
         new HumanMessage(
           `Context information: ${state.relevantDocs || "No specific information available."}\n\n` +
           `Question: ${state.question}\n\n` +
-          `Answer the question based on the context provided.`
+          `Answer the question based on the context provided, or your own knowledge if the context is insufficient.`
         )
       ]);
       
@@ -246,18 +258,20 @@ export class DiabetesRagAgent {
       
       const response = await this.model.invoke([
         new SystemMessage(
-          "Based on the user's question and your answer, suggest 3 natural follow-up questions they might want to ask. " +
-          "These should be directly related to diabetes management and relevant to the previous conversation."
+          "Based on the user's question and your answer, suggest 1 natural follow-up questions they might want to ask. " +
+          "These should be directly related to diabetes management and relevant to the previous conversation and it must be a short question not more than 10 words. " 
         ),
         new HumanMessage(
           `User question: ${state.question}\n` +
           `Your answer: ${state.answer}\n` +
-          `Generate 3 potential follow-up questions:`
+          `Generate 1 potential follow-up question:`
         )
       ]);
       
       // Parse the response to extract the follow-up questions
-      const content = response.content.toString();
+      let content = response.content.toString();
+      // Remove any markdown bold (**) from the content
+      content = content.replace(/\*\*/g, "");
       const questions = content
         .split(/\d+[\.\)]\s+/)  // Split by numbered list (1. or 1) format)
         .slice(1)  // Remove the first empty item
@@ -267,9 +281,9 @@ export class DiabetesRagAgent {
       return {
         ...state,
         followupQuestions: questions.length > 0 ? questions : [
-          "What are the common symptoms of diabetes?",
-          "How can I monitor my blood sugar at home?",
-          "What lifestyle changes can help manage diabetes?"
+          //"What are the common symptoms of diabetes?",
+          //"How can I monitor my blood sugar at home?",
+          //"What lifestyle changes can help manage diabetes?"
         ],
       };
     });
@@ -277,14 +291,15 @@ export class DiabetesRagAgent {
     // Connect the nodes in the graph
     this.graph.addEdge(START, "categorize_question" as any);
     this.graph.addEdge("categorize_question" as any, "retrieve_documents" as any);
-    this.graph.addEdge("retrieve_documents" as any, "check_info_sufficiency" as any);
-    this.graph.addConditionalEdges(
-      "check_info_sufficiency" as any,
-      (state) => (state.needsMoreInfo ? "request_more_info" : "generate_answer")
-    );
+    //this.graph.addEdge("retrieve_documents" as any, "check_info_sufficiency" as any);
+    //this.graph.addConditionalEdges(
+    //  "check_info_sufficiency" as any,
+    //  (state) => (state.needsMoreInfo ? "request_more_info" : "generate_answer")
+    //);
+    this.graph.addEdge("retrieve_documents" as any, "generate_answer" as any);
     this.graph.addEdge("generate_answer" as any, "generate_followups" as any);
     this.graph.addEdge("generate_followups" as any, END);
-    this.graph.addEdge("request_more_info" as any, END);
+    // this.graph.addEdge("request_more_info" as any, END);
   }
 
   public async answerQuestion(
@@ -310,7 +325,7 @@ export class DiabetesRagAgent {
       followupQuestions: finalState.followupQuestions || [],
     };
   }
-
+  /*
   public async handleVoiceInteraction(options: {
     recordingTimeout?: number;
     playbackVolume?: number;
@@ -374,6 +389,7 @@ export class DiabetesRagAgent {
       this.audioController = null;
     }
   }
+  */
 }
 
 export const diabetesRagAgent = new DiabetesRagAgent();
