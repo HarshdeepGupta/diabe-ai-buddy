@@ -1,27 +1,31 @@
-# Introducing Diabe-AI Buddy: Your Voice-Enabled Diabetes Q&A Companion
+# Introducing Diavoice: Your Voice-Enabled Diabetes AI Companion
 **URL**: https://lovable.dev/projects/34488ee5-e2c2-4996-9205-7bae2ab68ce7
 
-Managing diabetes can be a daily challenge — filled with countless questions about diet, exercise, medications, and symptom management. Wouldn’t it be great to have a knowledgeable assistant by your side, ready to answer your questions anytime, using natural conversation?
+URL to be updated 
 
-Meet **Diabe-AI Buddy** — a new **web-based medical Q&A chatbot** designed specifically for people living with diabetes. Powered by cutting-edge AI technologies, Diabe-AI Buddy combines **voice input and output** with a **retrieval-augmented generation (RAG) backend**, creating an intuitive, conversational experience that feels almost like speaking to a human expert.
 
-## Why Diabe-AI Buddy?
+Older adults with Type 2 Diabetes face unique challenges: difficulty using apps due to vision or dexterity issues, isolation, and lack of ongoing, tailored support. Most diabetes solutions are reactive and static. DiaVoice introduces a proactive, agentic AI—a voice-first companion that not only responds but initiates meaningful, context-aware interactions to actively support and guide daily diabetes care while fostering emotional well-being.
 
-People with diabetes often encounter complex, immediate questions:  
-- *Can I eat this food?*  
-- *What should I do if my blood sugar is too high?*  
-- *How does exercise affect my insulin needs?*  
-- *What are early signs of complications I should watch for?*
+Meet **DiaVoice** — a new **voice enabled medical assistant** designed specifically for people living with diabetes and face other challenges like old age, vision or dexterity issues. Powered by cutting-edge AI technologies, DiaVoice combines **voice input and output** with a **retrieval-augmented generation (RAG) backend**, creating an intuitive, conversational experience that feels almost like speaking to a human expert and support.
+Image of the working screenshot to be added 
+![image](https://github.com/user-attachments/assets/7653a2d9-20a3-4169-9e3a-2b4f82fb7f4f)
 
-Finding credible answers quickly can be stressful. Traditional web searches require careful reading and interpretation, which is especially difficult during busy or urgent moments. Diabetes Buddy is designed to bridge that gap — **providing reliable, conversational, and easy-to-understand guidance** right when you need it.
+
+## Why We Created DiaVoice – A Voice-First Companion for Older Adults with Diabetes
+we created DiaVoice because we saw a fundamental mismatch between the tools available for diabetes management and the real-world needs of the people who rely on them—especially older adults living with Diabetes. Most solutions today assume a level of tech-savviness, manual input, and visual interaction that many seniors simply find challenging. Vision decline, reduced dexterity, and cognitive fatigue turn seemingly simple apps into daily obstacles. What’s more, these tools tend to be reactive and impersonal, offering generic reminders rather than meaningful, adaptive support.
+But diabetes isn’t just about logging numbers—it’s a daily emotional and behavioral journey. Many seniors live alone, lack consistent human support, and face decision fatigue around medication, meals, and how they feel each day.
+- We wanted to remove the friction of managing diabetes by introducing an always-there, voice-first AI that speaks their language—literally and hence DiaVoice was born.
+- We focused on agentic design, so the AI initiates care—not just waits for input. It checks in, notices patterns, nudges gently, and knows when to involve caregivers.
+- We designed DiaVoice to be emotionally intelligent—not just a tracker, but a trusted companion who listens, learns, and evolves with the user.
+In short, we built DiaVoice to bring care to the user, rather than forcing the user to chase care through yet another screen. Because at this stage of life, what users need most is support that’s personal, proactive, and human-like. That’s exactly what DiaVoice delivers.
 
 ## Key Features
 
 ### 1. Voice Interaction
-With voice input and output capabilities, Diabe-AI Buddy allows users to **talk naturally** to the chatbot — no typing necessary. Whether you're cooking, exercising, or simply prefer speaking, you can:
+With voice input and output capabilities, DiaVoice Buddy allows users to **talk naturally** to the chatbot — no typing necessary. Whether you're cooking, exercising, or simply prefer speaking, you can:
 - **Ask questions aloud**
 - **Hear answers read back clearly**
-- **Have a multi-turn conversation** to dive deeper into topics
+- **Have a multi-turn conversation** to dive deeper into topics (is this available) ??
 
 The experience is designed to be hands-free, making it especially helpful for users with limited mobility, vision challenges, or those multitasking.
 
@@ -29,6 +33,7 @@ The experience is designed to be hands-free, making it especially helpful for us
 Unlike basic chatbots that rely only on pre-programmed scripts, Diabe-AI Buddy uses a **RAG-based architecture**. Here's how it works:
 - It **retrieves** relevant, up-to-date information from a trusted diabetes-focused knowledge base.
 - It **generates** coherent and customized answers, integrating retrieved facts into natural, human-like responses.
+- It **Suggests** addition questions that they user may be looking answers for as follow up questions
 
 This ensures that the chatbot is both **grounded in factual knowledge** and **adaptive to your unique questions**, even if they are highly specific.
 
@@ -39,19 +44,30 @@ The knowledge base used by Diabetes Buddy is curated from credible sources, incl
 - Nutrition and exercise recommendations for diabetics
 - FAQs from certified diabetes educators
 
-While Diabe-AI Buddy is **not a substitute for professional medical advice**, it is carefully designed to **supplement your learning** and support everyday decision-making.
+While Diabe-AI Buddy is **not a substitute for professional medical advice**, it is carefully designed to **supplement your learning ** and **provide support and companionship**.
 
 ### 4. Web App Convenience
 Diabetes Buddy is a **simple and accessible web app**:
 - No downloads or installations needed
 - Mobile-friendly for easy use on smartphones and tablets
-- Secure data handling with privacy protections
+- Secure data handling with privacy protections 
 
-You can start using it directly through your web browser — whenever and wherever you need support.
+You can start using it directly through your web browser from phone/ipad/laptop or any device— whenever and wherever you need support.
 
-## A Glimpse into How It Works
+## A Glimpse into How It Works 
+<video Link>
 
 When you ask a question like:
+> "How can I use a Glucometer ?"
+
+Here’s what happens behind the scenes:
+1. **Voice Input**: Your spoken question is transcribed.
+2. **RAG Search**: The system searches its diabetes-focused database for the most relevant documents.
+3. **Answer Generation**: It combines retrieved facts to generate a natural language answer.
+4. **Voice Output**: The answer is read back to you in a friendly, easy-to-understand tone.
+5. **Text Output** The answer is also show in the text. In addition to the response it suggests follow up questions which you would want to know based on your first question
+
+   < Add the screenshot Here>
 
 > "What should I eat after a low blood sugar episode?"
 
@@ -63,84 +79,53 @@ Here’s what happens behind the scenes:
 
 This pipeline delivers **quick, accurate, and conversational** support — giving you more confidence in your daily diabetes management.
 
-## Future Roadmap
+## Technical Details 
+## Architecture 
+
+## Data Sources Used:
+## Technologies Used:
+<To be updated>
+Data Storage and Retrieval: Azure Blob Storage, Azure Cosmos DB (Gremlin API), Azure AI Search.
+AI and Language Models: Gemini.
+Data Processing and Logic Flow: Azure AI Studio, Azure Prompt Flow.
+Backend and Application Server: Python for data extraction and preprocessing, with multiple integration points for data ingestion and retrieval.
+Front End: Next.js
+  
+## Target Audience:
+**Primary Target Audience** 
+* Older Adults with Type 2 Diabetes – Seniors aged 60+ who often live alone, face challenges with screens, and need simple, voice-based, empathetic health support.
+
+**Secondary Target Audience**
+* Caregivers of Older Adults – Family members or aides seeking peace of mind through smart, minimal, and meaningful health alerts.
+* Geriatric Healthcare Providers – Clinicians who want low-effort tools that help patients adhere to care plans and reduce risks.
+
+**Tertiary Target Audience**
+* Senior Living Communities & Facilities – Organizations looking for scalable voice-first companions to support resident wellness.
+* Healthcare Payers & Insurers – Plans aiming to lower avoidable hospital visits and improve chronic care outcomes for older adults.
+* Public Health & Aging Advocacy Organizations – Groups promoting access to inclusive digital health tools for underserved senior populations.## Future Roadmap
 
 Diabe-AI Buddy is just getting started! Planned features include:
 - **Personalized tracking** (e.g., blood glucose logs, food diaries)
 - **Emergency support** (triage guidance for high-risk symptoms)
 - **Reminder and Alert** (reminder to take insulin injection or measure blood sugar level if forgotten)
+- **Caregiver support** (Call to caregiver if the user wants)
 - **Integration with smartwatches and wearables** for even more seamless voice interaction
 - **Multilingual support** to make the platform accessible worldwide
 
-## Final Thoughts
+## Project Team
+* Harshdeep Gupta (Harshdeep.Gupta@microsoft.com)
+* Minha Hwang (minhahwang@microsoft.com) 
+* Pallavi Gupta (pallavigupta@microsoft.com)
+* Prachi Agrawal (Prachi.Agrawal@microsoft.com)
+## Technology & Languages
 
-Living with diabetes can feel overwhelming, but you don't have to do it alone. **Diabe-AI Buddy ** is here to empower you — providing **instant, voice-driven, expert-informed answers** whenever questions arise. It’s your pocket-sized, AI-powered companion for smarter diabetes management.
+## Project Repository URL
 
----
+## Deployed EndPoint URL
 
-**Try Diabe-AI Buddy  today** and experience the future of diabetes support — one conversation at a time.
-
-
+## Project Video
 
 
----
-## How can I edit this code?
-**Use Lovable**
-Simply visit the [Lovable Project](https://lovable.dev/projects/34488ee5-e2c2-4996-9205-7bae2ab68ce7) and start prompting.
-Changes made via Lovable will be committed automatically to this repo.
 
-**Use your preferred IDE**
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/34488ee5-e2c2-4996-9205-7bae2ab68ce7) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
