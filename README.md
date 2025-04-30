@@ -55,7 +55,6 @@ Diabetes Buddy is a **simple and accessible web app**:
 You can start using it directly through your web browser from phone/ipad/laptop or any device— whenever and wherever you need support.
 
 ## A Glimpse into How It Works 
-<video Link>
 
 When you ask a question like:
 > "How can I use a Glucometer ?"
