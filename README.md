@@ -86,13 +86,14 @@ This pipeline delivers **quick, accurate, and conversational** support — givin
 ## Data Sources Used:
 <links to be added>
 ## Technologies Used:
-<To be updated>
-Data Storage and Retrieval: Search Grounding
-AI and Language Models: Gemini Flash 2.0
-Voice Handling: Gemini Flash 2.0
-Data Processing and Logic Flow: Lang Graph, Search Grounding  
-Backend and Application Server: Type Script, with multiple integration points for data ingestion and retrieval, speech-to-text (ASR) AI engine and text-to-speech (TTS) AI engine.
-Front End: Type Script
+1. Front End: React + Type Script
+2. AI Stacks
+- Large Language Model: Gemini Flash 2.0 
+- Embedding Model: Gemini Embedding (for RAG)
+- Voice Handling: Gemini Flash 2.0  
+3. Data Storage and Retrieval: Search Grounding (URLs), Local CSV files, Vector store for memory 
+4. Data Processing and Agent Flow Orchestration: Lang Graph
+5. Backend and Application Server: Multiple integration points for data ingestion and retrieval, speech-to-text (ASR) AI engine, chat completion API (Gemini) and text-to-speech (TTS) AI engine.
   
 ## Target Audience:
 **Primary Target Audience** 
