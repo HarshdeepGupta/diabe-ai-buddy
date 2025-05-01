@@ -87,11 +87,12 @@ This pipeline delivers **quick, accurate, and conversational** support — givin
 <links to be added>
 ## Technologies Used:
 <To be updated>
-Data Storage and Retrieval: Azure Blob Storage, Azure Cosmos DB (Gremlin API), Azure AI Search.
-AI and Language Models: Gemini.
-Data Processing and Logic Flow: Azure AI Studio, Azure Prompt Flow.
-Backend and Application Server: Python for data extraction and preprocessing, with multiple integration points for data ingestion and retrieval.
-Front End: Next.js
+Data Storage and Retrieval: Search Grounding
+AI and Language Models: Gemini Flash 2.0
+Voice Handling: Gemini Flash 2.0
+Data Processing and Logic Flow: Lang Graph, Search Grounding  
+Backend and Application Server: Type Script, with multiple integration points for data ingestion and retrieval, speech-to-text (ASR) AI engine and text-to-speech (TTS) AI engine.
+Front End: Type Script
   
 ## Target Audience:
 **Primary Target Audience** 
