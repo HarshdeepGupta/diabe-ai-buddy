@@ -148,11 +148,11 @@ DiaVoice is just getting started! Planned features include:
 * Prachi Agrawal (Prachi.Agrawal@microsoft.com)
 
 ## Project Repository URL
-
+https://github.com/HarshdeepGupta/diabe-ai-buddy/edit/main/README.md
 ## Deployed EndPoint URL
-
+ https://lovable.dev/projects/34488ee5-e2c2-4996-9205-7bae2ab68ce7 (To be Updated)
 ## Project Video
-
+https://youtu.be/4d2ZSyX-nYQ
 
 
 
