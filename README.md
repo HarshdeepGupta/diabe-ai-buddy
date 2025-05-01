@@ -8,7 +8,8 @@ Older adults with Type 2 Diabetes face unique challenges: difficulty using apps 
 
 Meet **DiaVoice** — a new **voice enabled medical assistant** designed specifically for people living with diabetes and face other challenges like old age, vision or dexterity issues. Powered by cutting-edge AI technologies, DiaVoice combines **voice input and output** with a **retrieval-augmented generation (RAG) backend**, creating an intuitive, conversational experience that feels almost like speaking to a human expert and support.
 Image of the working screenshot to be added 
-![image](https://github.com/user-attachments/assets/7653a2d9-20a3-4169-9e3a-2b4f82fb7f4f)
+![DiaVoice](https://github.com/user-attachments/assets/06b9c9a5-a2c4-4cad-9f20-2a01bde14bc5)
+
 
 
 ## Why We Created DiaVoice – A Voice-First Companion for Older Adults with Diabetes
