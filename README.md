@@ -86,8 +86,30 @@ This pipeline delivers **quick, accurate, and conversational** support — givin
 ![image](https://github.com/user-attachments/assets/5b16b032-8520-4752-a86b-61a80cbd200f)
 
 ## Data Sources Used:
-<links to be added>
-  
+
+1. Glucose:
+    "https://www.diabetes.org/healthy-living/medication-treatments/blood-glucose-testing-and-control",
+    "https://www.niddk.nih.gov/health-information/diabetes/overview/managing-diabetes/know-blood-sugar-numbers"
+   
+3. Medication: 
+    "https://www.diabetes.org/healthy-living/medication-treatments",
+    "https://www.niddk.nih.gov/health-information/diabetes/overview/insulin-medicines-treatments"
+   
+4. Meal:
+    "https://diabetesjournals.org/care/article/40/Supplement_1/S33/36913/4-Lifestyle-Management",
+    "https://www.niddk.nih.gov/health-information/diabetes/overview/diet-eating-physical-activity",
+    "./backend/data/nutritiondata.csv",
+    "./backend/data/pre_food.csv"
+   
+5. Wellness: 
+    "https://www.diabetes.org/healthy-living/mental-health",
+    "https://www.niddk.nih.gov/health-information/diabetes/overview/preventing-problems"
+   
+6. General: 
+    "https://www.cdc.gov/diabetes/about/about-type-2-diabetes.html?CDC_AAref_Val=https://www.cdc.gov/diabetes/basics/type2.html",
+    "https://www.niddk.nih.gov/health-information/diabetes/overview",
+    "./backend/data/medquad.csv"
+   
 ## Technologies Used:
 1. Front End: React + Type Script
 2. AI Stacks
