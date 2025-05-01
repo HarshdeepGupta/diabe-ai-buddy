@@ -83,6 +83,7 @@ This pipeline delivers **quick, accurate, and conversational** support — givin
 
 ## Technical Details 
 ## Architecture 
+![image](https://github.com/user-attachments/assets/5b16b032-8520-4752-a86b-61a80cbd200f)
 
 ## Data Sources Used:
 <links to be added>
@@ -92,7 +93,7 @@ This pipeline delivers **quick, accurate, and conversational** support — givin
 2. AI Stacks
 - Large Language Model: Gemini Flash 2.0 
 - Embedding Model: Gemini Embedding (for RAG)
-- Voice Handling: Gemini Flash 2.0  
+- Voice Handling: Gemini Flash 2.0 (ASR), OpenTTS (TTS)  
 3. Data Storage and Retrieval: Search Grounding (URLs), Local CSV files, Vector store for memory 
 4. Data Processing and Agent Flow Orchestration: Lang Graph
 5. Backend and Application Server: Multiple integration points for data ingestion and retrieval, speech-to-text (ASR) AI engine, chat completion API (Gemini) and text-to-speech (TTS) AI engine.
