@@ -1,15 +1,13 @@
 import { StateGraph, CompiledStateGraph, START, END } from "@langchain/langgraph";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { MemoryVectorStore } from "langchain/vectorstores/memory";
-import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
-import { formatDocumentsAsString } from "langchain/util/document";
-// import { transcribeAudioInput, textToSpeech, recordVoice, playAudio } from './utils/audio';
+import { RecursiveCharacterTextSplitter } from "@langchain/community/text_splitter";
+import { MemoryVectorStore } from "@langchain/community/vectorstores/memory";
+import { formatDocumentsAsString } from "@langchain/core/utils/document";
 import { getApiKey } from "./utils/env";
 import logger from "./utils/logger";
-import { Document } from "langchain/document";
+import { Document } from "@langchain/core/documents";
 import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
 
 // Define our state interface for the agent
