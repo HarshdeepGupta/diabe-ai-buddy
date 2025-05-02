@@ -6,7 +6,7 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { formatDocumentsAsString } from "langchain/util/document";
-import { transcribeAudioInput, textToSpeech, recordVoice, playAudio } from './utils/audio';
+// import { transcribeAudioInput, textToSpeech, recordVoice, playAudio } from './utils/audio';
 import { getApiKey } from "./utils/env";
 import logger from "./utils/logger";
 import { Document } from "langchain/document";
@@ -36,7 +36,7 @@ const DOCUMENT_SOURCES = {
   meal: [
     "https://diabetesjournals.org/care/article/40/Supplement_1/S33/36913/4-Lifestyle-Management",
     "https://www.niddk.nih.gov/health-information/diabetes/overview/diet-eating-physical-activity",
-    "./backend/data/nutritiondata.csv",
+    // "./backend/data/nutritiondata.csv",
     //"./backend/data/pre_food.csv"
   ],
   wellness: [
@@ -46,7 +46,7 @@ const DOCUMENT_SOURCES = {
   general: [
     "https://www.cdc.gov/diabetes/about/about-type-2-diabetes.html?CDC_AAref_Val=https://www.cdc.gov/diabetes/basics/type2.html",
     "https://www.niddk.nih.gov/health-information/diabetes/overview",
-    "./backend/data/medquad.csv",
+    // "./backend/data/medquad.csv",
   ]
 };
 
@@ -60,7 +60,7 @@ export class DiabetesRagAgent {
   private graph: StateGraph<DiabetesQnAState>;
   private executor: any;
   private isInitialized: boolean = false;
-  private audioController: AbortController | null = null;
+  // private audioController: AbortController | null = null;
 
   constructor() {
     const API_KEY = getApiKey("GEMINI_API_KEY");
