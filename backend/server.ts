@@ -6,7 +6,7 @@ import cors from 'cors';
 // import { diabetesRagAgent } from './diabetesRagAgent.js';
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3001;
 
 // Middleware to parse JSON requests
 app.use(body_parser.json());
