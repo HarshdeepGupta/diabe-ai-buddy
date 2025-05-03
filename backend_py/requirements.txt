@@ -1,0 +1,9 @@
+flask
+python-dotenv
+langchain
+langgraph
+langchain-google-genai
+langchain-core
+langchain-text-splitters
+langchain-chroma
+gunicorn
