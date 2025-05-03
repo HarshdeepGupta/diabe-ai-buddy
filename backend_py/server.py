@@ -7,6 +7,9 @@ from diabetes_rag_agent import DiabetesRagAgent
 diabetes_rag_agent = DiabetesRagAgent()  # instantiate the agent
 import socket
 
+# Add this import:
+from flask_cors import CORS
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -16,6 +19,12 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 PORT = int(os.getenv("PORT", 3001))
+
+# Allow CORS for your frontend domain
+CORS(app, origins=[
+    "https://diabe-ai-buddy-frontend.onrender.com",
+    "http://localhost:5173"  # Optional: for local dev
+])
 
 def get_local_ips():
     """Get a list of local IP addresses."""

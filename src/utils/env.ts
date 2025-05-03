@@ -25,16 +25,16 @@ export function getEnvVar(key: string, defaultValue: string = ''): string {
 export const API_KEYS = {
   // Gemini API key for AI services
   GEMINI_API_KEY: getEnvVar('VITE_GEMINI_API_KEY'),
-  
+
   // OpenAI API key for LangGraph/LangChain integration
   OPENAI_API_KEY: getEnvVar('VITE_OPENAI_API_KEY'),
-  
+
   // Optional: Google Calendar integration
   GOOGLE_API_KEY: getEnvVar('VITE_GOOGLE_API_KEY'),
 
   // Backend service URL for LangGraph agent
   BACKEND_URL: getEnvVar('VITE_BACKEND_URL', 'http://localhost:3001'),
-  
+
   // Add other API keys as needed
 };
 
@@ -57,13 +57,8 @@ export const API_CONFIG = {
 export function checkRequiredEnvVars(): string[] {
   // Define the variables that are absolutely required for the app to function
   const required = ['VITE_GEMINI_API_KEY'];
-  
-  // Add OpenAI key to required list if we're using LangGraph features
-  if (import.meta.env.VITE_USE_LANGGRAPH === 'true') {
-    required.push('VITE_OPENAI_API_KEY');
-    required.push('VITE_BACKEND_URL');
-  }
-  
+  required.push('VITE_BACKEND_URL');
+
   return required.filter(key => !import.meta.env[key]);
 }
 

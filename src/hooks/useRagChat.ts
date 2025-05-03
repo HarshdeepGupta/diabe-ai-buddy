@@ -51,7 +51,8 @@ export function useRagChat({
 
       try {
         // Make API call to the backend
-        const response = await axios.post("http://localhost:3001/api/answerQuestion", {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+        const response = await axios.post(`${backendUrl}/api/answerQuestion`, {
           question: content,
           category: topic,
           conversationHistory: messages.map((msg) => ({
