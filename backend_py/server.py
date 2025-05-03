@@ -95,7 +95,7 @@ def preload_documents():
 
 if __name__ == '__main__':
     try:
-        # preload_documents()
+        preload_documents()
         print("Preloading documents...")
     except Exception as err:
         logger.error(f'Failed to preload documents: {err}')
