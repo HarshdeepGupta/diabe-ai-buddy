@@ -6,4 +6,5 @@ langchain-google-genai
 langchain-core
 langchain-text-splitters
 langchain-chroma
+langchain-community
 gunicorn

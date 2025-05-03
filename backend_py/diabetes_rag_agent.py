@@ -162,6 +162,7 @@ class DiabetesRagAgent:
                 docs = vector_store.similarity_search(state.question, k=3)
                 relevant_docs = format_documents_as_string(docs)
                 state.relevantDocs = relevant_docs
+                logger.info(f"Retrieved {len(docs)} documents for category '{category}'")
             except Exception as error:
                 logger.error(f"Error retrieving documents: {error}")
                 state.relevantDocs = ""
