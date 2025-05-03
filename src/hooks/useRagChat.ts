@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
+import { getApiKey } from "../utils/env.ts";
 
 // Types for the chat messages
 export type ChatRole = "user" | "assistant" | "system";
@@ -51,7 +52,7 @@ export function useRagChat({
 
       try {
         // Make API call to the backend
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
+        const backendUrl = getApiKey("BACKEND_URL");
         const response = await axios.post(`${backendUrl}/api/answerQuestion`, {
           question: content,
           category: topic,
