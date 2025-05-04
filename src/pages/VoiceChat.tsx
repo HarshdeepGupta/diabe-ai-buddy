@@ -237,8 +237,8 @@ export default function VoiceChatPage() {
       )}
 
       {activeTab === "chat" ? (
-        <>
-          <ScrollArea className="flex-1 p-4 mb-4 border rounded-lg bg-white/80 backdrop-blur-sm">
+        <div className="flex-1 flex flex-col min-h-0">
+          <ScrollArea className="flex-1 min-h-0 overflow-y-auto p-4 border rounded-lg bg-white/80 backdrop-blur-sm">
             <div className="space-y-4">
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -346,21 +346,21 @@ export default function VoiceChatPage() {
 
           {/* Voice Waveform Visualization */}
           {(isRecording || isSpeaking) && (
-            <div className="mb-4 p-4 bg-white/80 rounded-lg border flex items-center justify-center">
+            <div className="mb-4 shrink-0 p-4 bg-white/80 rounded-lg border flex items-center justify-center">
               <VoiceWaveform isActive={true} type={isRecording ? "listening" : "speaking"} />
               <p className="ml-4 text-lg font-medium text-primary">{buttonAppearance.label}</p>
             </div>
           )}
 
           {/* Quick Commands */}
-          <div className="mb-4 flex flex-wrap gap-2 justify-center">
+          <div className="mb-4 shrink-0 flex flex-wrap gap-2 justify-center">
             <QuickCommandButton icon={<Pill />} label="Medication" onClick={() => handleQuickCommand("Medication")} />
             <QuickCommandButton icon={<Heart />} label="Health" onClick={() => handleQuickCommand("Health")} />
             <QuickCommandButton icon={<Utensils />} label="Diet" onClick={() => handleQuickCommand("Diet")} />
             <QuickCommandButton icon={<HelpCircle />} label="Help" onClick={() => handleQuickCommand("Help")} />
           </div>
 
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center shrink-0">
             <Button onClick={handleVoiceButtonClick} size="icon" className={`h-12 w-12 ${buttonAppearance.color}`}>  
               {buttonAppearance.icon}
             </Button>
@@ -381,7 +381,7 @@ export default function VoiceChatPage() {
               <Send className="h-6 w-6" />
             </Button>
           </div>
-        </>
+        </div>
       ) : (
         <div className="flex-1 space-y-4">
           <Card className="border-2 border-muted">

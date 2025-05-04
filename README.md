@@ -1,5 +1,5 @@
 # Introducing Diavoice: Your Voice-Enabled Diabetes AI Companion
-**URL**: https://lovable.dev/projects/34488ee5-e2c2-4996-9205-7bae2ab68ce7
+**URL**: https://diabe-ai-buddy-frontend.onrender.com/
 
 URL to be updated 
 
