@@ -1,7 +1,5 @@
 # Introducing Diavoice: Your Voice-Enabled Diabetes AI Companion
-**URL**: https://diabe-ai-buddy-frontend.onrender.com/
-
-URL to be updated 
+**Project Deployed on URL**: https://diabe-ai-buddy-frontend.onrender.com/
 
 
 Older adults with Type 2 Diabetes face unique challenges: difficulty using apps due to vision or dexterity issues, isolation, and lack of ongoing, tailored support. Most diabetes solutions are reactive and static. DiaVoice introduces a proactive, agentic AI—a voice-first companion that not only responds but initiates meaningful, context-aware interactions to actively support and guide daily diabetes care while fostering emotional well-being.
