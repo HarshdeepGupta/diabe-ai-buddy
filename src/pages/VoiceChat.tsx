@@ -32,27 +32,27 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 
-type VoiceState = "idle" | "listening" | "processing" | "speaking"
 type AIPersonality = "supportive" | "coaching" | "clinical" | "friendly"
 
 export default function VoiceChatPage() {
   const [searchParams] = useSearchParams();
   const topic = searchParams.get("topic") as "glucose" | "medication" | "meal" | "wellness" | undefined;
   
-  // Use the RAG chat hook
+  // Use the RAG chat hook with voice support
   const {
     messages,
     isLoading,
     followupQuestions,
     sendMessage,
-    addSystemMessage
-  } = useRagChat({
-    topic,
-    initialMessages: []
-  });
+    addSystemMessage,
+    isRecording,
+    isProcessingVoice,
+    isSpeaking,
+    startRecording,
+    stopRecording,
+  } = useRagChat({ topic, initialMessages: [] });
 
   const [input, setInput] = useState("")
-  const [voiceState, setVoiceState] = useState<VoiceState>("idle")
   const [isMuted, setIsMuted] = useState(false)
   const [personality, setPersonality] = useState<AIPersonality>("supportive")
   const [isEmergencyDialogOpen, setIsEmergencyDialogOpen] = useState(false)
@@ -61,34 +61,29 @@ export default function VoiceChatPage() {
   const [showPersonalitySettings, setShowPersonalitySettings] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const waveformInterval = useRef<NodeJS.Timeout | null>(null)
+  const hasInitializedRef = useRef(false)
 
   // Initialize with welcome message based on topic
   useEffect(() => {
-    let initialMessageContent = "Hello Martha! I'm your DiaVoice assistant. How can I help you today with your diabetes management?";
-    
-    // Customize initial message based on topic
-    if (topic === "glucose") {
-      initialMessageContent = "Let's talk about blood sugar. What questions do you have?";
-    } else if (topic === "medication") {
-      initialMessageContent = "I am your medicine expert, what do you want to know?";
-    } else if (topic === "meal") {
-      initialMessageContent = "Let's discuss your meal options.";
-    } else if (topic === "wellness") {
-      initialMessageContent = "How are you feeling today, Martha? I'm here to listen and support you.";
-    }
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
 
-    // Add a morning check-in message if no specific topic
+    // Morning check-in when no topic
     if (!topic) {
       const checkInMessage = "Good morning, Martha! It's time for your morning check-in. Would you like to log your blood sugar now?";
       addSystemMessage(checkInMessage, "check-in");
+      return;
     }
-    
-    // Send initial message
-    setTimeout(() => {
-      // Using addSystemMessage instead of sendMessage to avoid making an API call for the welcome message
-      addSystemMessage(initialMessageContent, topic ? "text" : "check-in");
-    }, 100);
+
+    // Topic-based greeting
+    let greetingMessage = "Hello Martha! I'm your DiaVoice assistant. How can I help you today with your diabetes management?";
+    if (topic === "glucose") greetingMessage = "Let's talk about blood sugar. What questions do you have?";
+    else if (topic === "medication") greetingMessage = "I am your medicine expert, what do you want to know?";
+    else if (topic === "meal") greetingMessage = "Let's discuss your meal options.";
+    else if (topic === "wellness") greetingMessage = "How are you feeling today, Martha? I'm here to listen and support you.";
+
+    // Send initial greeting
+    setTimeout(() => addSystemMessage(greetingMessage, "text"), 100);
   }, [topic, addSystemMessage]);
 
   // Scroll to bottom when messages change
@@ -107,77 +102,24 @@ export default function VoiceChatPage() {
     setInput("");
   }
 
-  // Voice button handler
+  // Voice button handler using hook
   const handleVoiceButtonClick = () => {
-    if (voiceState === "idle") {
-      startListening()
-    } else if (voiceState === "listening") {
-      stopListening()
-    } else if (voiceState === "speaking") {
-      stopSpeaking()
+    if (!isRecording) startRecording();
+    else stopRecording();
+  }
+
+  // Button appearance based on voice states
+  const getVoiceButtonAppearance = () => {
+    if (isRecording) {
+      return { icon: <Mic className="h-6 w-6" />, color: "bg-coral hover:bg-coral/90", label: "Recording..." };
     }
-  }
-
-  const startListening = () => {
-    setVoiceState("listening")
-
-    // Simulate voice recognition after 3 seconds
-    setTimeout(() => {
-      const recognizedText = getRandomUserQuery()
-      
-      // Send the recognized text through RAG
-      sendMessage(recognizedText);
-      setVoiceState("processing");
-      
-      // After response is received (simulated)
-      setTimeout(() => {
-        setVoiceState("speaking");
-        
-        // Simulate speaking for 5 seconds
-        setTimeout(() => {
-          setVoiceState("idle");
-        }, 5000);
-      }, 2000);
-    }, 3000)
-  }
-
-  const stopListening = () => {
-    setVoiceState("idle")
-  }
-
-  const stopSpeaking = () => {
-    setVoiceState("idle")
-  }
-
-  // Check for emergency keywords
-  useEffect(() => {
-    // Look at the last user message
-    const lastUserMessage = [...messages].reverse().find(m => m.role === "user");
-    
-    if (lastUserMessage) {
-      const content = lastUserMessage.content.toLowerCase();
-      if (
-        content.includes("emergency") ||
-        content.includes("help") ||
-        content.includes("pain") ||
-        content.includes("dizzy")
-      ) {
-        setIsEmergencyDialogOpen(true);
-      }
+    if (isProcessingVoice) {
+      return { icon: <Sparkles className="h-6 w-6" />, color: "bg-lavender hover:bg-lavender/90", label: "Processing..." };
     }
-  }, [messages]);
-
-  const getRandomUserQuery = () => {
-    const queries = [
-      "What should I eat for breakfast?",
-      "How am I doing today?",
-      "When should I take my medication?",
-      "What's my blood sugar level?",
-      "Can you recommend some exercises?",
-      "I'm feeling tired today",
-      "Set a reminder for my doctor's appointment",
-    ]
-    return queries[Math.floor(Math.random() * queries.length)]
+    if (isSpeaking) {
+      return { icon: <PauseCircle className="h-6 w-6" />, color: "bg-teal hover:bg-teal/90", label: "Speaking..." };
+    }
+    return { icon: <Mic className="h-6 w-6" />, color: "bg-primary hover:bg-primary/90", label: "Start Speaking" };
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -189,35 +131,6 @@ export default function VoiceChatPage() {
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  }
-
-  const getVoiceButtonAppearance = () => {
-    switch (voiceState) {
-      case "listening":
-        return {
-          icon: <Mic className="h-6 w-6" />,
-          color: "bg-coral hover:bg-coral/90",
-          label: "Listening...",
-        }
-      case "processing":
-        return {
-          icon: <Sparkles className="h-6 w-6" />,
-          color: "bg-lavender hover:bg-lavender/90",
-          label: "Processing...",
-        }
-      case "speaking":
-        return {
-          icon: <PauseCircle className="h-6 w-6" />,
-          color: "bg-teal hover:bg-teal/90",
-          label: "Speaking...",
-        }
-      default:
-        return {
-          icon: <Mic className="h-6 w-6" />,
-          color: "bg-primary hover:bg-primary/90",
-          label: "Start Speaking",
-        }
-    }
   }
 
   const handleEmergencyAction = (action: string) => {
@@ -324,8 +237,8 @@ export default function VoiceChatPage() {
       )}
 
       {activeTab === "chat" ? (
-        <>
-          <ScrollArea className="flex-1 p-4 mb-4 border rounded-lg bg-white/80 backdrop-blur-sm">
+        <div className="flex-1 flex flex-col min-h-0">
+          <ScrollArea className="flex-1 min-h-0 overflow-y-auto p-4 border rounded-lg bg-white/80 backdrop-blur-sm">
             <div className="space-y-4">
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
@@ -432,23 +345,23 @@ export default function VoiceChatPage() {
           </ScrollArea>
 
           {/* Voice Waveform Visualization */}
-          {voiceState !== "idle" && (
-            <div className="mb-4 p-4 bg-white/80 rounded-lg border flex items-center justify-center">
-              <VoiceWaveform isActive={true} type={voiceState === "listening" ? "listening" : "speaking"} />
+          {(isRecording || isSpeaking) && (
+            <div className="mb-4 shrink-0 p-4 bg-white/80 rounded-lg border flex items-center justify-center">
+              <VoiceWaveform isActive={true} type={isRecording ? "listening" : "speaking"} />
               <p className="ml-4 text-lg font-medium text-primary">{buttonAppearance.label}</p>
             </div>
           )}
 
           {/* Quick Commands */}
-          <div className="mb-4 flex flex-wrap gap-2 justify-center">
+          <div className="mb-4 shrink-0 flex flex-wrap gap-2 justify-center">
             <QuickCommandButton icon={<Pill />} label="Medication" onClick={() => handleQuickCommand("Medication")} />
             <QuickCommandButton icon={<Heart />} label="Health" onClick={() => handleQuickCommand("Health")} />
             <QuickCommandButton icon={<Utensils />} label="Diet" onClick={() => handleQuickCommand("Diet")} />
             <QuickCommandButton icon={<HelpCircle />} label="Help" onClick={() => handleQuickCommand("Help")} />
           </div>
 
-          <div className="flex gap-2 items-center">
-            <Button onClick={handleVoiceButtonClick} size="icon" className={`h-12 w-12 ${buttonAppearance.color}`}>
+          <div className="flex gap-2 items-center shrink-0">
+            <Button onClick={handleVoiceButtonClick} size="icon" className={`h-12 w-12 ${buttonAppearance.color}`}>  
               {buttonAppearance.icon}
             </Button>
             <Input
@@ -468,7 +381,7 @@ export default function VoiceChatPage() {
               <Send className="h-6 w-6" />
             </Button>
           </div>
-        </>
+        </div>
       ) : (
         <div className="flex-1 space-y-4">
           <Card className="border-2 border-muted">

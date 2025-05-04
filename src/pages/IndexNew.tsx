@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge"
 const IndexNew = () => {
   // Initialize PWA features and check environment variables
   useEffect(() => {
+    
     // Check for required environment variables
     const missingVars = checkRequiredEnvVars();
     if (missingVars.length > 0) {
@@ -60,12 +61,14 @@ const IndexNew = () => {
         <div className="bg-gradient-to-r from-primary to-secondary p-1"></div>
         <CardContent className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping opacity-75"></div>
-              <div className="relative bg-primary/20 p-5 rounded-full">
-                <Mic className="h-10 w-10 text-primary" />
+            <Link to="/voice-chat">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping opacity-75"></div>
+                <div className="relative bg-primary/20 p-5 rounded-full">
+                  <Mic className="h-10 w-10 text-primary" />
+                </div>
               </div>
-            </div>
+            </Link>
             <div className="flex-1">
               <Badge className="mb-2 bg-primary/20 text-primary hover:bg-primary/30 text-sm">Morning Check-In</Badge>
               <h2 className="text-2xl md:text-3xl font-bold mb-2">Good morning, Martha!</h2>

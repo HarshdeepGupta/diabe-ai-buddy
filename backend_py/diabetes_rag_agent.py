@@ -301,3 +301,6 @@ class DiabetesRagAgent:
             "answer": getattr(final_state, "answer", "I'm sorry, I couldn't generate an answer at this time."),
             "followupQuestions": getattr(final_state, "followupQuestions", []),
         }
+
+
+rag_agent = DiabetesRagAgent()
