@@ -11,6 +11,9 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langgraph.graph import StateGraph, END, START
+from uuid import uuid4
+from langchain_community.document_loaders.csv_loader import CSVLoader
+from langchain_community.document_loaders import PyPDFLoader
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -30,8 +33,7 @@ DOCUMENT_SOURCES = {
     "meal": [
         "https://diabetesjournals.org/care/article/40/Supplement_1/S33/36913/4-Lifestyle-Management",
         "https://www.niddk.nih.gov/health-information/diabetes/overview/diet-eating-physical-activity",
-        # "./backend/data/nutritiondata.csv",
-        # "./backend/data/pre_food.csv"
+        "./backend_py/data/nutritiondata.csv"
     ],
     "wellness": [
         "https://www.diabetes.org/healthy-living/mental-health",
@@ -40,7 +42,7 @@ DOCUMENT_SOURCES = {
     "general": [
         "https://www.cdc.gov/diabetes/about/about-type-2-diabetes.html?CDC_AAref_Val=https://www.cdc.gov/diabetes/basics/type2.html",
         "https://www.niddk.nih.gov/health-information/diabetes/overview",
-        # "./backend/data/medquad.csv",
+        #"./backend_py/data/medquad.csv",
     ]
 }
 
@@ -76,9 +78,13 @@ class DiabetesRagAgent:
             max_output_tokens=2048,
         )
         self.embeddings = GoogleGenerativeAIEmbeddings(
-            api_key=api_key,
-            model="embedding-001",
+            google_api_key=api_key,
+            model="models/embedding-001",
         )
+        #self.embeddings = GoogleGenerativeAIEmbeddings(
+        #    api_key=api_key,
+        #    model="embedding-001",
+        #)
         self.vector_stores: Dict[str, Any] = {}
         self.graph = StateGraph(agents_state_schema)
         self.executor = None
@@ -90,48 +96,89 @@ class DiabetesRagAgent:
         self.executor = self.graph.compile()
         self.is_initialized = True
 
-    def _setup_vector_stores(self):
-        categories = ["glucose", "medication", "meal", "wellness", "general"]
-        # Only create data strores if they don't exist
-        if os.path.exists("./backend/data"):
-            for category in categories:
-                data_store_path = f"./backend/data/{category}"
-                if os.path.exists(data_store_path):
+    def _setup_vector_stores(self) -> None:
+        """
+        Build/refresh an in‑memory vector store for each category defined in
+        DOCUMENT_SOURCES.  Mirrors the TypeScript `setupVectorStores` logic.
+        """
+        categories: List[str] = ["glucose", "medication", "meal",
+                                "wellness", "general"]
+
+        for category in categories:
+            try:
+                # 1) create loaders for every source in the category
+                web_loaders = [
+                    PyPDFLoader(source) if source.endswith(".pdf") else (
+                        CSVLoader(source) if source.endswith(".csv") else WebBaseLoader(source)
+                    )
+                    for source in DOCUMENT_SOURCES[category]
+                ]
+
+                # 2) load the documents
+                docs = []
+                for source, loader in zip(DOCUMENT_SOURCES[category], web_loaders):
+                    try:
+                        if source.endswith(".csv"):
+                            logger.info("Attempting to load CSV file: %s", source)
+                        loaded_docs = loader.load()
+                        if not loaded_docs:
+                            logger.warning("No documents loaded from source: %s", source)
+                            continue
+                        docs.extend(loaded_docs)
+                        logger.info(
+                            "✅ Successfully Pre‑loaded %d pages from %s (category: %s)",
+                            len(loaded_docs), source, category
+                        )
+                    except Exception as err:
+                        logger.warning("Failed to load a document source, skipping: %s", err)
+                        if source.endswith(".csv"):
+                            logger.error("Error loading CSV file: %s. Please check the file format and content.", source)
+
+                if not docs:
+                    logger.warning("No documents available for category: %s", category)
                     self.vector_stores[category] = Chroma(
-                        persist_directory=data_store_path,
+                        collection_name=f"empty_{category}_{uuid4().hex[:8]}",
                         embedding_function=self.embeddings,
                     )
-                    logger.info(f"Loaded existing vector store for category: {category}")
-                else:
-                    try:
-                        web_loaders = []
-                        for source in DOCUMENT_SOURCES[category]:
-                            if source.endswith(".csv"):
-                                # CSVLoader not implemented in this example
-                                continue
-                            web_loaders.append(
-                                WebBaseLoader(
-                                    source
-                                )
-                            )
-                        docs = []
-                        for loader in web_loaders:
-                            try:
-                                loaded_docs = loader.load()
-                                docs.extend(loaded_docs)
-                            except Exception as err:
-                                logger.warning(f"Failed to load a document source, skipping: {err}")
-                        text_splitter = RecursiveCharacterTextSplitter(
-                            chunk_size=1000,
-                            chunk_overlap=200,
-                        )
-                        split_docs = text_splitter.split_documents(docs)
-                        self.vector_stores[category] = Chroma.from_documents(
-                            split_docs, self.embeddings, persist_directory=data_store_path)
-                        logger.info(f"Processed {len(split_docs)} document chunks for category: {category}")
-                    except Exception as error:
-                        logger.error(f"Error processing document category: {category}: {error}")
-                        self.vector_stores[category] = Chroma()
+                    logger.info("Created empty vector store for category: %s", category)
+                    continue
+
+                # 3) split into chunks
+                splitter = RecursiveCharacterTextSplitter(
+                    chunk_size=1000,
+                    chunk_overlap=200,
+                )
+                split_docs = splitter.split_documents(docs)
+
+                if not split_docs:
+                    logger.warning("No document chunks created for category: %s", category)
+                    self.vector_stores[category] = Chroma(
+                        collection_name=f"empty_{category}_{uuid4().hex[:8]}",
+                        embedding_function=self.embeddings,
+                    )
+                    logger.info("Created empty vector store for category: %s", category)
+                    continue
+
+                # 4) build the vector store for the category
+                self.vector_stores[category] = Chroma.from_documents(
+                    split_docs, self.embeddings
+                )
+
+                logger.info("Processed %d document chunks for category: %s",
+                            len(split_docs), category)
+
+            except Exception as error:
+                logger.error("Error processing document category %s: %s",
+                            category, error)
+                # fall back to an empty store so similarity_search still works
+                # self.vector_stores[category] = Chroma(self.embeddings)
+                # create an empty chroma collection so similarity_search still works
+
+                self.vector_stores[category] = Chroma(
+                    collection_name=f"empty_{category}_{uuid4().hex[:8]}",
+                    embedding_function=self.embeddings,
+                )
+                logger.info("Created empty vector store for category: %s", category)
 
     def _setup_graph(self):
         # Categorize question node
@@ -243,9 +290,9 @@ class DiabetesRagAgent:
             needsMoreInfo=False,
             conversationHistory=conversation_history,
         )
-        logger.info(f"Initial state: {state}")
+        #logger.info(f"Initial state: {state}")
         final_state = self.executor.invoke(state)
-        logger.info(f"Final state returned by executor: {final_state} (type: {type(final_state)})")
+        #logger.info(f"Final state returned by executor: {final_state} (type: {type(final_state)})")
         # If final_state is a dict, convert to dataclass
         if isinstance(final_state, dict):
             final_state = agents_state_schema(**final_state)

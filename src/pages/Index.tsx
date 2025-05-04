@@ -3,7 +3,6 @@ import { ProfileProvider } from "@/context/ProfileContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useEffect } from "react";
-import { registerServiceWorker, setupInstallPrompt } from "@/utils/pwa";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { checkRequiredEnvVars } from "@/utils/env";
@@ -11,11 +10,6 @@ import { checkRequiredEnvVars } from "@/utils/env";
 const Index = () => {
   // Initialize PWA features and check environment variables
   useEffect(() => {
-    // Register service worker
-    registerServiceWorker();
-    
-    // Set up install prompt
-    setupInstallPrompt();
     
     // Check for required environment variables
     const missingVars = checkRequiredEnvVars();

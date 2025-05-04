@@ -18,13 +18,29 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-PORT = int(os.getenv("PORT", 3001))
+PORT = int(os.getenv("PORT", 5000))
 
 # Allow CORS for your frontend domain
+'''
 CORS(app, origins=[
     "https://diabe-ai-buddy-frontend.onrender.com",
-    "http://localhost:5173"  # Optional: for local dev
+    "http://localhost:5173",  # Optional: for local dev
+    "http://localhost:3001"  # Optional: for local dev
 ])
+'''
+
+allowed_origins = [
+    "https://diabe-ai-buddy-frontend.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:3001",
+]
+
+CORS(
+    app,
+    resources={r"/api/*": {"origins": allowed_origins}},
+    methods=["GET", "POST", "OPTIONS"],
+    supports_credentials=False,      # set True if you need cookies / auth
+)
 
 def get_local_ips():
     """Get a list of local IP addresses."""

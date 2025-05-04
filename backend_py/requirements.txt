@@ -9,3 +9,4 @@ langchain-chroma
 langchain-community
 gunicorn
 flask-cors
+beautifulsoup4        # HTML parsing needed by WebBaseLoader
