@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import axios from "axios";
-import { getApiKey } from "../utils/env.ts";
+import { get_env_var } from "../utils/env.ts";
 
 // Types for the chat messages
 export type ChatRole = "user" | "assistant" | "system";
@@ -33,6 +33,14 @@ export function useRagChat({
   const [isLoading, setIsLoading] = useState(false);
   const [followupQuestions, setFollowupQuestions] = useState<string[]>([]);
 
+  // Voice chat states
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   // Send a user message to the backend
   const sendMessage = useCallback(
     async (content: string, messageType: "text" | "voice" = "text") => {
@@ -52,7 +60,7 @@ export function useRagChat({
 
       try {
         // Make API call to the backend
-        const backendUrl = getApiKey("BACKEND_URL");
+        const backendUrl = get_env_var("BACKEND_URL");
         const response = await axios.post(`${backendUrl}/api/answerQuestion`, {
           question: content,
           category: topic,
@@ -121,6 +129,97 @@ export function useRagChat({
     []
   );
 
+  // Start voice recording
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      mediaRecorderRef.current.addEventListener("dataavailable", (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      });
+      mediaRecorderRef.current.addEventListener("stop", handleRecordingStop);
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error accessing microphone", error);
+      alert("Failed to access microphone. Please try again.");
+    }
+  }, [topic, messages]);
+
+  // Stop voice recording
+  const stopRecording = useCallback(() => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+    setIsProcessingVoice(true);
+  }, []);
+
+  // Handle recording stop and send audio to backend
+  const handleRecordingStop = useCallback(async () => {
+    const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+    console.debug("Recorded audio blob size (bytes):", audioBlob.size);
+    const arrayBuffer = await audioBlob.arrayBuffer();
+    try {
+      const backendUrl = get_env_var("BACKEND_URL");
+      console.debug("POST to audio endpoint:", `${backendUrl}/api/answerQuestionWithAudio`);
+      const response = await axios.post(`${backendUrl}/api/answerQuestionWithAudio`, {
+        audioBytes: Array.from(new Uint8Array(arrayBuffer)),
+        category: topic,
+        conversationHistory: messages.map((msg) => ({ role: msg.role, content: msg.content })),
+      });
+      console.debug("Audio endpoint response status/data:", response.status, response.data);
+      // Extract base64 audio, follow-up questions, and transcripts
+      const { audio: audioB64, followups, question_text, answer_text } = response.data as {
+        audio: string;
+        followups: string[];
+        question_text: string;
+        answer_text: string;
+      };
+      // Add user transcript message for the spoken question
+      const userTranscript: ChatMessage = {
+        id: Date.now().toString(),
+        role: "user",
+        content: question_text,
+        timestamp: new Date(),
+        type: "voice",
+      };
+      setMessages((prev) => [...prev, userTranscript]);
+      // Add assistant voice message
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: answer_text, // populate with backend answer_text
+        timestamp: new Date(),
+        type: "voice",
+        context: { options: followups },
+      };
+      setMessages((prev) => [...prev, assistantMessage]);
+      setFollowupQuestions(followups);
+
+      // Decode base64 to binary and play audio
+      const binaryString = atob(audioB64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const audioBlobResponse = new Blob([bytes], { type: "audio/mpeg" });
+      const audioUrl = URL.createObjectURL(audioBlobResponse);
+      audioRef.current = new Audio(audioUrl);
+      audioRef.current.addEventListener("ended", () => {
+        setIsSpeaking(false);
+      });
+      setIsSpeaking(true);
+      await audioRef.current.play();
+    } catch (error: any) {
+      console.error("Error processing voice message:", error, error.response?.data);
+      const errMsg = error.response?.data?.error || error.message || "Unknown error";
+      alert(`Failed to process voice message: ${errMsg}`);
+    } finally {
+      setIsProcessingVoice(false);
+    }
+  }, [topic, messages]);
+
   return {
     messages,
     isLoading,
@@ -128,5 +227,12 @@ export function useRagChat({
     sendMessage,
     clearMessages,
     addSystemMessage,
+    // Voice controls
+    isRecording,
+    isProcessingVoice,
+    isSpeaking,
+    startRecording,
+    stopRecording,
+    audioRef,
   };
 }

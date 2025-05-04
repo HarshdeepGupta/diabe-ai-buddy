@@ -2,10 +2,10 @@ import os
 import logging
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
-from diabetes_rag_agent import DiabetesRagAgent
-
-diabetes_rag_agent = DiabetesRagAgent()  # instantiate the agent
+from diabetes_rag_agent import rag_agent
+from voice_chat_api import voice_agent
 import socket
+import base64
 
 # Add this import:
 from flask_cors import CORS
@@ -20,11 +20,12 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 PORT = int(os.getenv("PORT", 3001))
 
-# Allow CORS for your frontend domain
-CORS(app, origins=[
+# Enable CORS for API endpoints (allow localhost:3000 and preflight headers)
+CORS(app, resources={r"/api/*": {"origins": [
     "https://diabe-ai-buddy-frontend.onrender.com",
-    "http://localhost:5173"  # Optional: for local dev
-])
+    "http://localhost:5173",
+    "http://localhost:3000"
+] }}, allow_headers=["Content-Type", "Authorization"], supports_credentials=True)
 
 def get_local_ips():
     """Get a list of local IP addresses."""
@@ -51,7 +52,7 @@ def answer_question():
     category = data.get('category')
     conversation_history = data.get('conversationHistory')
     try:
-        result = diabetes_rag_agent.answer_question(
+        result = rag_agent.answer_question(
                 question=question,
             category=category,
             conversation_history=conversation_history
@@ -60,6 +61,32 @@ def answer_question():
     except Exception as e:
         logger.exception(f"Error processing question: {e}")
         return jsonify({'error': 'Failed to process the question.'}), 500
+    
+    
+@app.route('/api/answerQuestionWithAudio', methods=['POST'])
+def answer_question_with_audio():
+    data = request.get_json()
+    audio_bytes = data.get('audioBytes')
+    category = data.get('category')
+    conversation_history = data.get('conversationHistory')
+    try:
+        # Get raw audio, follow-ups, and transcripts
+        raw_audio, followups, question_text, answer_text = voice_agent(
+            audio_bytes=audio_bytes,
+            category=category,
+            conversation_history=conversation_history
+        )
+        # Encode audio bytes to base64 string for JSON
+        audio_b64 = base64.b64encode(raw_audio).decode('utf-8')
+        return jsonify({
+            'audio': audio_b64,
+            'followups': followups,
+            'question_text': question_text,
+            'answer_text': answer_text
+        }), 200
+    except Exception as e:
+        logger.exception(f"Error processing audio question: {e}")
+        return jsonify({'error': 'Failed to process the audio question.'}), 500
 
 @app.route('/', methods=['GET'])
 def home():
@@ -90,7 +117,7 @@ def handle_exception(e):
 
 def preload_documents():
     logger.info('Preloading diabetes documents and vector stores...')
-    diabetes_rag_agent.preload_documents()
+    rag_agent.preload_documents()
     logger.info('Documents loaded.')
 
 if __name__ == '__main__':
