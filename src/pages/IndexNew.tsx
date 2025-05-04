@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { registerServiceWorker, setupInstallPrompt } from "@/utils/pwa";
 import { Link } from 'react-router-dom';
 import { checkRequiredEnvVars } from "@/utils/env";
 import type React from "react"
@@ -23,11 +22,6 @@ import { Badge } from "@/components/ui/badge"
 const IndexNew = () => {
   // Initialize PWA features and check environment variables
   useEffect(() => {
-    // Register service worker
-    registerServiceWorker();
-    
-    // Set up install prompt
-    setupInstallPrompt();
     
     // Check for required environment variables
     const missingVars = checkRequiredEnvVars();

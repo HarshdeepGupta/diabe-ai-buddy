@@ -33,7 +33,7 @@ export const API_KEYS = {
   GOOGLE_API_KEY: getEnvVar('VITE_GOOGLE_API_KEY'),
 
   // Backend service URL for LangGraph agent
-  BACKEND_URL: getEnvVar('VITE_BACKEND_URL', 'http://localhost:3001'),
+  BACKEND_URL: getEnvVar('VITE_BACKEND_URL'),
 
   // Add other API keys as needed
 };
@@ -56,7 +56,6 @@ export const API_CONFIG = {
  */
 export function checkRequiredEnvVars(): string[] {
   // Define the variables that are absolutely required for the app to function
-  const required = ['VITE_GEMINI_API_KEY'];
   required.push('VITE_BACKEND_URL');
 
   return required.filter(key => !import.meta.env[key]);
