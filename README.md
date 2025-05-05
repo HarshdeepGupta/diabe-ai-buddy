@@ -83,6 +83,12 @@ This pipeline delivers **quick, accurate, and conversational** support — givin
 ## Architecture 
 ![image](https://github.com/user-attachments/assets/5b16b032-8520-4752-a86b-61a80cbd200f)
 
+## Design Considerations:
+** voice one 
+** General Prompt Eng 
+** prompt eng optimization especially for voice 
+** Challenges if any
+
 ## Data Sources Used:
 
 1. Glucose:
