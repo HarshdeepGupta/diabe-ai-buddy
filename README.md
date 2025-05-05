@@ -57,25 +57,28 @@ You can start using it directly through your web browser from phone/ipad/laptop 
 ## A Glimpse into How It Works 
 
 When you ask a question like:
+> "Why am I feeling agitaged and angry ?"
+
+Here’s what happens behind the scenes:
+1. **Voice Input**: Your spoken question "why am I feeling agitated and angry" is transcribed.
+2. **RAG Search**: The system searches its diabetes-focused database for the most relevant documents.
+3. **Answer Generation**: It combines retrieved facts to generate a natural language answer.
+4. **Voice Output**: The answer is read back to you in a friendly, easy-to-understand tone. If voice has been used as the primary mode of communication the answer is optimized to be short enough for the user to listen
+5. **Text Output** The answer is also show in the text. In addition to the response it suggests follow up questions which you would want to know based on your first question
+
+![image](https://github.com/user-attachments/assets/298fec93-6aa8-476f-8716-01dfd58023ac)
+
+When you type a question like:
+
 > "How can I use a Glucometer ?"
 
 Here’s what happens behind the scenes:
-1. **Voice Input**: Your spoken question is transcribed.
+1. **Text Input**: Your written question is given as an input.
 2. **RAG Search**: The system searches its diabetes-focused database for the most relevant documents.
 3. **Answer Generation**: It combines retrieved facts to generate a natural language answer.
-4. **Voice Output**: The answer is read back to you in a friendly, easy-to-understand tone.
-5. **Text Output** The answer is also show in the text. In addition to the response it suggests follow up questions which you would want to know based on your first question
+4. **Text Output**: The answer is written back to you in the text.In addition to the response it suggests follow up questions which you would want to know based on your first question
 
-![image](https://github.com/user-attachments/assets/09a561e6-4ec8-4f9e-aea8-70f59174314a)
-
-> "What should I eat after a low blood sugar episode?"
-
-Here’s what happens behind the scenes:
-1. **Voice Input**: Your spoken question is transcribed.
-2. **RAG Search**: The system searches its diabetes-focused database for the most relevant documents.
-3. **Answer Generation**: It combines retrieved facts to generate a natural language answer.
-4. **Voice Output**: The answer is read back to you in a friendly, easy-to-understand tone.
-5. **Text Output** The answer is also show in the text. In addition to the response it suggests follow up questions which you would want to know based on your first question
+![image](https://github.com/user-attachments/assets/ef508cf6-80b6-4405-82a9-e4e562abd34d)
 
 This pipeline delivers **quick, accurate, and conversational** support — giving you more confidence in your daily diabetes management.
 
