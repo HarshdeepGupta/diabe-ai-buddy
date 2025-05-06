@@ -87,10 +87,10 @@ This pipeline delivers **quick, accurate, and conversational** support — givin
 ![image](https://github.com/user-attachments/assets/11971d9c-3689-4405-a7e6-1b1c8a6a31ce)
 
 ## Design Considerations:
-** Voice-enabled for elderly 
-** Prompt Engineerig for retrieval augmented generation (RAG)
-** Prompt Engineering Optimization for Voice Handling
-** Challenges: Lack of Langraph documenation for type script -> Changed backend server to Python/Flask
+**Voice-enabled for elderly** </br> 
+**Prompt Engineerig for retrieval augmented generation (RAG)** </br> 
+**Prompt Engineering Optimization for Voice Handling** </br>
+**Challenges: Lack of Langraph documenation for type script -> Changed backend server to Python/Flask** </br>
 
 ## Data Sources Used:
 
@@ -118,32 +118,31 @@ This pipeline delivers **quick, accurate, and conversational** support — givin
     "./backend/data/medquad.csv"
    
 ## Technologies Used:
-1. Frontend Voice Chat Interface (VoiceChat.tsx): React App Server - voice and tex chat interface
-2. Backend Voice Processing (voice_chat_api.py): Handles speech-to-text and text-to-speech conversion, 
-Uses ElevenLabs API for high-quality voice synthesis
+### 1. Frontend Voice Chat Interface (VoiceChat.tsx): React App Server - voice and tex chat interface
+### 2. Backend Voice Processing (voice_chat_api.py): Handles speech-to-text and text-to-speech conversion, Uses ElevenLabs API for high-quality voice synthesis
 - Voice Handling: ELeven Labs IIscribe API (ASR), Eleven Labs API (TTS)  
-4. RAG Engine (diabetes_rag_agent.py): Core RAG implementation using LangChain and Google's Gemini model
-Features
+### 3. RAG Engine (diabetes_rag_agent.py): Core RAG implementation using **LangChain** and **Google's Gemini Flash 2.0 and embedding models**
+
+**Features**
 - Document categorization (glucose, medication, meal, wellness, general)
-- Vector storage using Chroma DB
-- Source loading from URLs and CSV files
+- Vector storage using **Chroma DB**
+- Source loading from **URLs and CSV files**
 - Response generation with follow-up questions
-Flow
+  
+**Flow**
 - Question categorization
 - Relevant document retrieval
 - Answer generation with context
 - Follow-up question generation
-4. Flask backend Server (server.py):
-REST API endpoints:
+### 4. Flask backend Server (server.py):
+**REST API endpoints**:
 - /api/answerQuestion: Text-based Q&A
 - /api/answerQuestionWithAudio: Voice-based Q&A
 CORS configuration for frontend communication
 Health monitoring endpoints
-5. Message Components
+### 5. Message Components
 - user-message-bubble.tsx: Displays user messages with voice indicators
-- agent-response-bubble.tsx: Shows AI responses with:
-  Visual categorization (alerts, check-ins, insights)
-  Interactive options
+- agent-response-bubble.tsx: Shows AI responses with: Visual categorization (alerts, check-ins, insights), Interactive options, 
   Feedback buttons
   
 ## Target Audience:
