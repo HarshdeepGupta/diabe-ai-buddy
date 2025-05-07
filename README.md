@@ -1,5 +1,5 @@
 # Introducing Diavoice: Your Voice-Enabled Diabetes AI Companion
-**Project Deployed Endpoint URL**: https://diabe-ai-buddy-frontend.onrender.com/
+**Project Deployed Endpoint URL**: https://diabe-ai-buddy-frontend.onrender.com/ <br>
 **Youtube Video**: https://youtu.be/BDP5hbUW4F8
 
 
