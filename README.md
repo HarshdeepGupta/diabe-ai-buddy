@@ -13,7 +13,7 @@ Image of the working screenshot to be added
 
 ## Why We Created DiaVoice – A Voice-First Companion for Older Adults with Diabetes
 we created DiaVoice because we saw a fundamental mismatch between the tools available for diabetes management and the real-world needs of the people who rely on them—especially older adults living with Diabetes. Most solutions today assume a level of tech-savviness, manual input, and visual interaction that many seniors simply find challenging. Vision decline, reduced dexterity, and cognitive fatigue turn seemingly simple apps into daily obstacles. What’s more, these tools tend to be reactive and impersonal, offering generic reminders rather than meaningful, adaptive support.
-But diabetes isn’t just about logging numbers—it’s a daily emotional and behavioral journey. Many seniors live alone, lack consistent human support, and face decision fatigue around medication, meals, and how they feel each day.
+However, diabetes isn’t just about logging numbers—it’s a daily emotional and behavioral journey. Many seniors live alone, lack consistent human support, and face decision fatigue around medication, meals, and how they feel each day.
 - We wanted to remove the friction of managing diabetes by introducing an always-there, voice-first AI that speaks their language—literally and hence DiaVoice was born.
 - We focused on agentic design, so the AI initiates care—not just waits for input. It checks in, notices patterns, nudges gently, and knows when to involve caregivers.
 - We designed DiaVoice to be emotionally intelligent—not just a tracker, but a trusted companion who listens, learns, and evolves with the user.
@@ -22,7 +22,7 @@ In short, we built DiaVoice to bring care to the user, rather than forcing the u
 ## Key Features
 
 ### 1. Voice Interaction
-With voice input and output capabilities, DiaVoice Buddy allows users to **talk naturally** to the chatbot — no typing necessary. Whether you're cooking, exercising, or simply prefer speaking, you can:
+With voice input and output capabilities, DiaVoice allows users to **talk naturally** to the chatbot — no typing necessary. Whether you're cooking, exercising, or simply prefer speaking, you can:
 - **Ask questions aloud**
 - **Hear answers read back clearly**
 - **Have a multi-turn conversation** to dive deeper into topics (is this available) ??
@@ -31,7 +31,7 @@ With voice input and output capabilities, DiaVoice Buddy allows users to **talk 
 The experience is designed to be hands-free, making it especially helpful for users with limited mobility, vision challenges, or those multitasking.
 
 ### 2. Retrieval-Augmented Generation (RAG) Engine
-Unlike basic chatbots that rely only on pre-programmed scripts, Diabe-AI Buddy uses a **RAG-based architecture**. Here's how it works:
+Unlike basic chatbots that rely only on pre-programmed scripts, DiaVoice uses a **RAG-based architecture**. Here's how it works:
 - It **retrieves** relevant, up-to-date information from a trusted diabetes-focused knowledge base.
 - It **generates** coherent and customized answers, integrating retrieved facts into natural, human-like responses.
 - It **Suggests** addition questions that they user may be looking answers for as follow up questions
@@ -39,16 +39,16 @@ Unlike basic chatbots that rely only on pre-programmed scripts, Diabe-AI Buddy u
 This ensures that DiaVoice is both **grounded in factual knowledge** and **adaptive to unique questions**, even if they are highly specific.
 
 ### 3. Trusted Medical Content
-The knowledge base used by Diabetes Buddy is curated from credible sources, including:
+The knowledge base used by DiaVoice is curated from credible sources, including:
 - American Diabetes Association guidelines
 - Peer-reviewed clinical articles
 - Nutrition and exercise recommendations for diabetics
 - FAQs from certified diabetes educators
 
-While Diabe-AI Buddy is **not a substitute for professional medical advice**, it is carefully designed to **supplement your learning ** and **provide support and companionship**.
+While DiaVoice is **not a substitute for professional medical advice**, it is carefully designed to **supplement your learning** and **provide support and companionship**.
 
 ### 4. Web App Convenience
-Diabetes Buddy is a **simple and accessible web app**:
+DiaVoice is a **simple and accessible web app**:
 - No downloads or installations needed
 - Mobile-friendly for easy use on smartphones and tablets
 - Secure data handling with privacy protections 
@@ -90,7 +90,7 @@ This pipeline delivers **quick, accurate, and conversational** support — givin
 ## Design Considerations:
 **Voice-enabled for elderly** </br> 
 **Prompt Engineerig for retrieval augmented generation (RAG)** </br> 
-**Prompt Engineering Optimization for Voice Handling** </br>
+**Prompt Engineering Optimization for Voice handling** </br>
 **Challenges: Lack of Langraph documenation for type script -> Changed backend server to Python/Flask** </br>
 
 ## Data Sources Used:
