@@ -1,13 +1,9 @@
 flask
 python-dotenv
-langchain
-langgraph
-langchain-google-genai
-langchain-core
-langchain-text-splitters
-langchain-chroma
-langchain-community
+google-generativeai
+numpy
+requests
+beautifulsoup4
 gunicorn
 flask-cors
 elevenlabs
-beautifulsoup4
