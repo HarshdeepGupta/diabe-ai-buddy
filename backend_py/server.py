@@ -24,7 +24,7 @@ PORT = int(os.getenv("PORT", 5000))
 _LOCALHOST_RE = re.compile(r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$")
 
 def _allowed_origin(origin):
-    """Return the origin string if it is allowed, otherwise None."""
+    """CORS origin validator callback. Returns the origin string if allowed, otherwise None."""
     if origin is None:
         return None
     if origin == "https://diabe-ai-buddy-frontend.onrender.com":

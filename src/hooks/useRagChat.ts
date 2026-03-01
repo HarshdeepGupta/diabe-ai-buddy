@@ -94,12 +94,14 @@ export function useRagChat({
       } catch (error) {
         console.error("Error sending message to backend", error);
 
+        const isTimeout = axios.isCancel(error);
         // Add error message
         const errorMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content:
-            "I'm sorry, I encountered an error processing your request. Please try again or ask a different question.",
+          content: isTimeout
+            ? "The request timed out. Please try again or ask a shorter question."
+            : "I'm sorry, I encountered an error processing your request. Please try again or ask a different question.",
           timestamp: new Date(),
           type: "text",
         };
@@ -221,7 +223,10 @@ export function useRagChat({
       await audioRef.current.play();
     } catch (error: any) {
       console.error("Error processing voice message:", error, error.response?.data);
-      const errMsg = error.response?.data?.error || error.message || "Unknown error";
+      const isTimeout = axios.isCancel(error);
+      const errMsg = isTimeout
+        ? "The request timed out. Please try again."
+        : error.response?.data?.error || error.message || "Unknown error";
       alert(`Failed to process voice message: ${errMsg}`);
     } finally {
       setIsProcessingVoice(false);
