@@ -1,19 +1,13 @@
 import os
+import csv
+import re
 import logging
+import requests
+import numpy as np
 from typing import Optional, List, Dict, Any
 from dotenv import load_dotenv
-from dataclasses import dataclass, field, asdict
-
-# LangChain/LangGraph imports (adjust as needed for your environment)
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_community.document_loaders import WebBaseLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
-from langgraph.graph import StateGraph, END, START
-from uuid import uuid4
-from langchain_community.document_loaders.csv_loader import CSVLoader
-from langchain_community.document_loaders import PyPDFLoader
+from bs4 import BeautifulSoup
+import google.generativeai as genai
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -42,270 +36,219 @@ DOCUMENT_SOURCES = {
     "general": [
         "https://www.cdc.gov/diabetes/about/about-type-2-diabetes.html?CDC_AAref_Val=https://www.cdc.gov/diabetes/basics/type2.html",
         "https://www.niddk.nih.gov/health-information/diabetes/overview",
-        #"./backend_py/data/medquad.csv",
     ]
 }
 
-def format_documents_as_string(docs):
-    """
-    Format a list of document objects as a single string for context.
-    """
-    return "\n\n".join(
-        getattr(doc, "page_content", str(doc)) for doc in docs
-    )
-    
-# Define the state schema as a dataclass
-@dataclass
-class agents_state_schema:
-    """
-    Schema for the agent's state.
-    """
-    question: str
-    category: Optional[str] = None
-    relevantDocs: Optional[str] = None
-    answer: Optional[str] = None
-    followupQuestions: Optional[List[str]] = field(default_factory=list)
-    needsMoreInfo: bool = False
-    conversationHistory: Optional[List[Dict[str, str]]] = None
+_VALID_CATEGORIES = ["glucose", "medication", "meal", "wellness", "general"]
+
+
+class SimpleVectorStore:
+    """Lightweight in-memory vector store using cosine similarity."""
+
+    def __init__(self):
+        self._embeddings: List[np.ndarray] = []
+        self._documents: List[str] = []
+
+    def add_documents(self, documents: List[str], embeddings: List[np.ndarray]) -> None:
+        self._documents.extend(documents)
+        self._embeddings.extend(embeddings)
+
+    def similarity_search(self, query_embedding: np.ndarray, k: int = 3) -> List[str]:
+        if not self._embeddings:
+            return []
+        matrix = np.vstack(self._embeddings)
+        # Normalise query
+        q_norm = query_embedding / (np.linalg.norm(query_embedding) + 1e-10)
+        # Normalise document embeddings row-wise
+        norms = np.linalg.norm(matrix, axis=1, keepdims=True) + 1e-10
+        scores = (matrix / norms) @ q_norm
+        top_k = min(k, len(self._documents))
+        indices = np.argsort(scores)[-top_k:][::-1]
+        return [self._documents[i] for i in indices]
+
+
+def _load_web_document(url: str) -> str:
+    """Fetch a URL and return its plain-text content."""
+    try:
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; DiabetesBot/1.0)"}
+        response = requests.get(url, timeout=15, headers=headers)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        for tag in soup(["script", "style", "nav", "footer", "header"]):
+            tag.decompose()
+        text = soup.get_text(separator="\n", strip=True)
+        return re.sub(r"\n{3,}", "\n\n", text)
+    except Exception as exc:
+        logger.warning("Failed to load %s: %s", url, exc)
+        return ""
+
+
+def _load_csv_document(path: str) -> str:
+    """Read a CSV file and return its rows as plain text."""
+    try:
+        rows = []
+        with open(path, newline="", encoding="utf-8") as fh:
+            reader = csv.DictReader(fh)
+            for row in reader:
+                rows.append(", ".join(f"{k}: {v}" for k, v in row.items() if v))
+        return "\n".join(rows)
+    except Exception as exc:
+        logger.warning("Failed to load CSV %s: %s", path, exc)
+        return ""
+
+
+def _split_text(text: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> List[str]:
+    """Split *text* into overlapping chunks of at most *chunk_size* characters."""
+    chunks = []
+    start = 0
+    while start < len(text):
+        chunks.append(text[start:start + chunk_size])
+        start += chunk_size - chunk_overlap
+    return [c for c in chunks if c.strip()]
+
 
 class DiabetesRagAgent:
+    """Pure-Python RAG agent for diabetes Q&A using Google Gemini directly."""
+
     def __init__(self):
         api_key = os.getenv("GEMINI_API_KEY")
-        os.environ["GOOGLE_API_KEY"] = api_key  # Correct way to set environment variable
-        self.model = ChatGoogleGenerativeAI(
-            api_key=api_key,
-            model="gemini-2.0-flash",
-            max_output_tokens=2048,
-        )
-        self.embeddings = GoogleGenerativeAIEmbeddings(
-            google_api_key=api_key,
-            model="models/embedding-001",
-        )
-        #self.embeddings = GoogleGenerativeAIEmbeddings(
-        #    api_key=api_key,
-        #    model="embedding-001",
-        #)
-        self.vector_stores: Dict[str, Any] = {}
-        self.graph = StateGraph(agents_state_schema)
-        self.executor = None
+        genai.configure(api_key=api_key)
+        self._model = genai.GenerativeModel("gemini-2.0-flash")
+        self._vector_stores: Dict[str, SimpleVectorStore] = {}
         self.is_initialized = False
 
-    def preload_documents(self):
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    def preload_documents(self) -> None:
         self._setup_vector_stores()
-        self._setup_graph()
-        self.executor = self.graph.compile()
         self.is_initialized = True
-
-    def _setup_vector_stores(self) -> None:
-        """
-        Build/refresh an in‑memory vector store for each category defined in
-        DOCUMENT_SOURCES.  Mirrors the TypeScript `setupVectorStores` logic.
-        """
-        categories: List[str] = ["glucose", "medication", "meal",
-                                "wellness", "general"]
-
-        for category in categories:
-            try:
-                # 1) create loaders for every source in the category
-                web_loaders = [
-                    PyPDFLoader(source) if source.endswith(".pdf") else (
-                        CSVLoader(source) if source.endswith(".csv") else WebBaseLoader(source)
-                    )
-                    for source in DOCUMENT_SOURCES[category]
-                ]
-
-                # 2) load the documents
-                docs = []
-                for source, loader in zip(DOCUMENT_SOURCES[category], web_loaders):
-                    try:
-                        if source.endswith(".csv"):
-                            logger.info("Attempting to load CSV file: %s", source)
-                        loaded_docs = loader.load()
-                        if not loaded_docs:
-                            logger.warning("No documents loaded from source: %s", source)
-                            continue
-                        docs.extend(loaded_docs)
-                        logger.info(
-                            "✅ Successfully Pre‑loaded %d pages from %s (category: %s)",
-                            len(loaded_docs), source, category
-                        )
-                    except Exception as err:
-                        logger.warning("Failed to load a document source, skipping: %s", err)
-                        if source.endswith(".csv"):
-                            logger.error("Error loading CSV file: %s. Please check the file format and content.", source)
-
-                if not docs:
-                    logger.warning("No documents available for category: %s", category)
-                    self.vector_stores[category] = Chroma(
-                        collection_name=f"empty_{category}_{uuid4().hex[:8]}",
-                        embedding_function=self.embeddings,
-                    )
-                    logger.info("Created empty vector store for category: %s", category)
-                    continue
-
-                # 3) split into chunks
-                splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=1000,
-                    chunk_overlap=200,
-                )
-                split_docs = splitter.split_documents(docs)
-
-                if not split_docs:
-                    logger.warning("No document chunks created for category: %s", category)
-                    self.vector_stores[category] = Chroma(
-                        collection_name=f"empty_{category}_{uuid4().hex[:8]}",
-                        embedding_function=self.embeddings,
-                    )
-                    logger.info("Created empty vector store for category: %s", category)
-                    continue
-
-                # 4) build the vector store for the category
-                self.vector_stores[category] = Chroma.from_documents(
-                    split_docs, self.embeddings
-                )
-
-                logger.info("Processed %d document chunks for category: %s",
-                            len(split_docs), category)
-
-            except Exception as error:
-                logger.error("Error processing document category %s: %s",
-                            category, error)
-                # fall back to an empty store so similarity_search still works
-                # self.vector_stores[category] = Chroma(self.embeddings)
-                # create an empty chroma collection so similarity_search still works
-
-                self.vector_stores[category] = Chroma(
-                    collection_name=f"empty_{category}_{uuid4().hex[:8]}",
-                    embedding_function=self.embeddings,
-                )
-                logger.info("Created empty vector store for category: %s", category)
-
-    def _setup_graph(self):
-        valid_categories = ["glucose", "medication", "meal", "wellness", "general"]
-
-        # Categorize question node
-        def categorize_question(state: agents_state_schema) -> agents_state_schema:
-            # Skip the LLM call when a valid category was already provided
-            if state.category and state.category in valid_categories:
-                logger.info("Skipping categorization — category already set: %s", state.category)
-                return state
-            response = self.model.invoke([
-                SystemMessage(
-                    content=(
-                        "You are an expert at categorizing diabetes-related questions. "
-                        "Categorize the given question into one of these categories: "
-                        "glucose (blood sugar management), medication (medications and treatments), "
-                        "meal (nutrition and diet), wellness (emotional and mental health), "
-                        "or general (general diabetes information). "
-                        "Respond with only the category name in lowercase."
-                    )
-                ),
-                HumanMessage(content=state.question),
-            ])
-            category = response.content.strip().lower()
-            state.category = category if category in valid_categories else "general"
-            return state
-
-        # Retrieve documents node
-        def retrieve_documents(state: agents_state_schema) -> agents_state_schema:
-            category = state.category or "general"
-            vector_store = self.vector_stores.get(category)
-            try:
-                docs = vector_store.similarity_search(state.question, k=3)
-                relevant_docs = format_documents_as_string(docs)
-                state.relevantDocs = relevant_docs
-                logger.info(f"Retrieved {len(docs)} documents for category '{category}'")
-            except Exception as error:
-                logger.error(f"Error retrieving documents: {error}")
-                state.relevantDocs = ""
-                state.needsMoreInfo = True
-            return state
-
-        # Generate answer node
-        def generate_answer(state: agents_state_schema) -> agents_state_schema:
-            response = self.model.invoke([
-                SystemMessage(
-                    content=(
-                        "You are a helpful and accurate medical AI assistant for diabetes patients. "
-                        "Use the provided context information to answer the question if it is relevant. "
-                        "If the context does not contain the answer, use your own knowledge to provide the most accurate and helpful response. "
-                        "Do not say 'I am sorry, but this document does not contain information about ...' or similar phrases. "
-                        "Always provide a helpful, informative answer, and mention that the patient should consult healthcare professionals for medical advice."
-                    )
-                ),
-                HumanMessage(
-                    content=(
-                        f"Context information: {state.relevantDocs or 'No specific information available.'}\n\n"
-                        f"Question: {state.question}\n\n"
-                        "Answer the question based on the context provided, or your own knowledge if the context is insufficient."
-                    )
-                )
-            ])
-            state.answer = response.content
-            return state
-
-        # Generate followups node
-        def generate_followups(state: agents_state_schema) -> agents_state_schema:
-            if not state.answer:
-                state.followupQuestions = []
-                return state
-            response = self.model.invoke([
-                SystemMessage(
-                    content=(
-                        "Based on the user's question and your answer, suggest 1 natural follow-up questions they might want to ask. "
-                        "These should be directly related to diabetes management and relevant to the previous conversation and it must be a short question not more than 10 words. "
-                    )
-                ),
-                HumanMessage(
-                    content=(
-                        f"User question: {state.question}\n"
-                        f"Your answer: {state.answer}\n"
-                        "Generate 1 potential follow-up question:"
-                    )
-                )
-            ])
-            content = response.content.replace("**", "")
-            questions = [q.strip() for q in content.split('\n') if q.strip()]
-            state.followupQuestions = questions if questions else []
-            return state
-
-        # Build the state graph
-        self.graph.add_node("categorize_question", categorize_question)
-        self.graph.add_node("retrieve_documents", retrieve_documents)
-        self.graph.add_node("generate_answer", generate_answer)
-        self.graph.add_node("generate_followups", generate_followups)
-        self.graph.add_edge(START, "categorize_question")
-        self.graph.add_edge("categorize_question", "retrieve_documents")
-        self.graph.add_edge("retrieve_documents", "generate_answer")
-        self.graph.add_edge("generate_answer", "generate_followups")
-        self.graph.add_edge("generate_followups", END)
 
     def answer_question(
         self,
         question: str,
         category: Optional[str] = None,
-        conversation_history: Optional[List[Dict[str, str]]] = None
+        conversation_history: Optional[List[Dict[str, str]]] = None,
     ) -> Dict[str, Any]:
         if not self.is_initialized:
             self.preload_documents()
-        # Create state using dataclass
-        state = agents_state_schema(
-            question=question,
-            category=category,
-            needsMoreInfo=False,
-            conversationHistory=conversation_history,
-        )
-        #logger.info(f"Initial state: {state}")
-        final_state = self.executor.invoke(state)
-        #logger.info(f"Final state returned by executor: {final_state} (type: {type(final_state)})")
-        # If final_state is a dict, convert to dataclass
-        if isinstance(final_state, dict):
-            final_state = agents_state_schema(**final_state)
-        # Convert dataclass to dict for output
+        cat = self._categorize_question(question, category)
+        context = self._retrieve_documents(question, cat)
+        answer = self._generate_answer(question, context)
+        followups = self._generate_followups(question, answer)
         return {
-            "answer": getattr(final_state, "answer", "I'm sorry, I couldn't generate an answer at this time."),
-            "followupQuestions": getattr(final_state, "followupQuestions", []),
+            "answer": answer or "I'm sorry, I couldn't generate an answer at this time.",
+            "followupQuestions": followups,
         }
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    def _embed_text(self, text: str, task_type: str = "retrieval_document") -> np.ndarray:
+        result = genai.embed_content(
+            model="models/embedding-001",
+            content=text,
+            task_type=task_type,
+        )
+        return np.array(result["embedding"])
+
+    def _setup_vector_stores(self) -> None:
+        for category in _VALID_CATEGORIES:
+            store = SimpleVectorStore()
+            try:
+                raw_texts: List[str] = []
+                for source in DOCUMENT_SOURCES[category]:
+                    if source.endswith(".csv"):
+                        logger.info("Loading CSV: %s", source)
+                        text = _load_csv_document(source)
+                    else:
+                        text = _load_web_document(source)
+                    if text:
+                        raw_texts.append(text)
+                        logger.info("✅ Loaded %s (category: %s)", source, category)
+                    else:
+                        logger.warning("No content from %s", source)
+
+                if not raw_texts:
+                    logger.warning("No documents for category: %s", category)
+                    self._vector_stores[category] = store
+                    continue
+
+                chunks = []
+                for text in raw_texts:
+                    chunks.extend(_split_text(text))
+
+                if not chunks:
+                    logger.warning("No chunks for category: %s", category)
+                    self._vector_stores[category] = store
+                    continue
+
+                embeddings = [self._embed_text(c) for c in chunks]
+                store.add_documents(chunks, embeddings)
+                logger.info("Stored %d chunks for category: %s", len(chunks), category)
+            except Exception as exc:
+                logger.error("Error processing category %s: %s", category, exc)
+            self._vector_stores[category] = store
+
+    def _categorize_question(self, question: str, category: Optional[str]) -> str:
+        if category and category in _VALID_CATEGORIES:
+            logger.info("Skipping categorization — category already set: %s", category)
+            return category
+        prompt = (
+            "You are an expert at categorizing diabetes-related questions. "
+            "Categorize the given question into one of these categories: "
+            "glucose (blood sugar management), medication (medications and treatments), "
+            "meal (nutrition and diet), wellness (emotional and mental health), "
+            "or general (general diabetes information). "
+            "Respond with only the category name in lowercase.\n\n"
+            f"Question: {question}"
+        )
+        response = self._model.generate_content(prompt)
+        cat = response.text.strip().lower()
+        return cat if cat in _VALID_CATEGORIES else "general"
+
+    def _retrieve_documents(self, question: str, category: str) -> str:
+        store = self._vector_stores.get(category, SimpleVectorStore())
+        try:
+            query_embedding = self._embed_text(question, task_type="retrieval_query")
+            docs = store.similarity_search(query_embedding, k=3)
+            logger.info("Retrieved %d documents for category '%s'", len(docs), category)
+            return "\n\n".join(docs)
+        except Exception as exc:
+            logger.error("Error retrieving documents: %s", exc)
+            return ""
+
+    def _generate_answer(self, question: str, context: str) -> str:
+        prompt = (
+            "You are a helpful and accurate medical AI assistant for diabetes patients. "
+            "Use the provided context information to answer the question if it is relevant. "
+            "If the context does not contain the answer, use your own knowledge to provide the most accurate and helpful response. "
+            "Do not say 'I am sorry, but this document does not contain information about ...' or similar phrases. "
+            "Always provide a helpful, informative answer, and mention that the patient should consult healthcare professionals for medical advice.\n\n"
+            f"Context information: {context or 'No specific information available.'}\n\n"
+            f"Question: {question}\n\n"
+            "Answer the question based on the context provided, or your own knowledge if the context is insufficient."
+        )
+        response = self._model.generate_content(prompt)
+        return response.text
+
+    def _generate_followups(self, question: str, answer: str) -> List[str]:
+        if not answer:
+            return []
+        prompt = (
+            "Based on the user's question and your answer, suggest 1 natural follow-up question the user might want to ask. "
+            "It should be directly related to diabetes management and relevant to the previous conversation. "
+            "It must be a short question, no more than 10 words.\n\n"
+            f"User question: {question}\n"
+            f"Your answer: {answer}\n"
+            "Generate 1 potential follow-up question:"
+        )
+        response = self._model.generate_content(prompt)
+        content = response.text.replace("**", "")
+        questions = [q.strip() for q in content.split("\n") if q.strip()]
+        return questions if questions else []
 
 
 rag_agent = DiabetesRagAgent()
