@@ -1,4 +1,5 @@
 import os
+import re
 import logging
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
@@ -20,20 +21,21 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 PORT = int(os.getenv("PORT", 5000))
 
-allowed_origins = [
-    "https://diabe-ai-buddy-frontend.onrender.com",
-    # Allow all ports on localhost (http and https)
-    *[f"http://localhost:{port}" for port in range(1, 65536)],
-    *[f"https://localhost:{port}" for port in range(1, 65536)],
-    "http://127.0.0.1",
-    "https://127.0.0.1",
-    "http://localhost",
-    "https://localhost",
-]
+_LOCALHOST_RE = re.compile(r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$")
+
+def _allowed_origin(origin):
+    """Return the origin string if it is allowed, otherwise None."""
+    if origin is None:
+        return None
+    if origin == "https://diabe-ai-buddy-frontend.onrender.com":
+        return origin
+    if _LOCALHOST_RE.match(origin):
+        return origin
+    return None
 
 CORS(
     app,
-    resources={r"/api/*": {"origins": allowed_origins}},
+    resources={r"/api/*": {"origins": _allowed_origin}},
     methods=["GET", "POST", "OPTIONS"],
     supports_credentials=False,      # set True if you need cookies / auth
 )

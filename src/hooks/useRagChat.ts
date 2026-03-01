@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import axios from "axios";
 import { get_env_var } from "../utils/env.ts";
 
+const REQUEST_TIMEOUT_MS = 30_000;
+
 // Types for the chat messages
 export type ChatRole = "user" | "assistant" | "system";
 
@@ -61,6 +63,8 @@ export function useRagChat({
       try {
         // Make API call to the backend
         const backendUrl = get_env_var("BACKEND_URL");
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
         const response = await axios.post(`${backendUrl}/api/answerQuestion`, {
           question: content,
           category: topic,
@@ -68,7 +72,8 @@ export function useRagChat({
             role: msg.role,
             content: msg.content,
           })),
-        });
+        }, { signal: controller.signal });
+        clearTimeout(timeoutId);
 
         const result = response.data;
 
@@ -161,12 +166,15 @@ export function useRagChat({
     const arrayBuffer = await audioBlob.arrayBuffer();
     try {
       const backendUrl = get_env_var("BACKEND_URL");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
       console.debug("POST to audio endpoint:", `${backendUrl}/api/answerQuestionWithAudio`);
       const response = await axios.post(`${backendUrl}/api/answerQuestionWithAudio`, {
         audioBytes: Array.from(new Uint8Array(arrayBuffer)),
         category: topic,
         conversationHistory: messages.map((msg) => ({ role: msg.role, content: msg.content })),
-      });
+      }, { signal: controller.signal });
+      clearTimeout(timeoutId);
       console.debug("Audio endpoint response status/data:", response.status, response.data);
       // Extract base64 audio, follow-up questions, and transcripts
       const { audio: audioB64, followups, question_text, answer_text } = response.data as {

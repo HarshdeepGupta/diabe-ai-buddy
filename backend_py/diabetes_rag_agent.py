@@ -181,8 +181,14 @@ class DiabetesRagAgent:
                 logger.info("Created empty vector store for category: %s", category)
 
     def _setup_graph(self):
+        valid_categories = ["glucose", "medication", "meal", "wellness", "general"]
+
         # Categorize question node
         def categorize_question(state: agents_state_schema) -> agents_state_schema:
+            # Skip the LLM call when a valid category was already provided
+            if state.category and state.category in valid_categories:
+                logger.info("Skipping categorization — category already set: %s", state.category)
+                return state
             response = self.model.invoke([
                 SystemMessage(
                     content=(
@@ -197,7 +203,6 @@ class DiabetesRagAgent:
                 HumanMessage(content=state.question),
             ])
             category = response.content.strip().lower()
-            valid_categories = ["glucose", "medication", "meal", "wellness", "general"]
             state.category = category if category in valid_categories else "general"
             return state
 
